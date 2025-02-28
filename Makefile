@@ -22,3 +22,5 @@ reinstall:
 	rm -rf package-lock.json
 	make install
 
+seed:
+	npm run seed
