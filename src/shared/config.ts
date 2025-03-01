@@ -1,7 +1,7 @@
-import z from 'zod';
+import { config } from 'dotenv';
 import fs from 'fs';
 import path from 'path';
-import { config } from 'dotenv';
+import z from 'zod';
 
 config({
   path: '.env',

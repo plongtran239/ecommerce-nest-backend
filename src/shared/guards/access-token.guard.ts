@@ -1,4 +1,5 @@
-import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+
 import { REQUEST_USER_KEY } from 'src/shared/constants/auth.constant';
 import { TokenService } from 'src/shared/services/token.service';
 

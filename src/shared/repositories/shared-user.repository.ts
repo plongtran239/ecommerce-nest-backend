@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+
 import { UserType } from 'src/shared/models/shared-user.model';
 import { PrismaService } from 'src/shared/services/prisma.service';
 
