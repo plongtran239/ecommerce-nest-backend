@@ -6,6 +6,7 @@ import { RegisterBodyType, SendOTPBodyType } from 'src/routes/auth/auth.model';
 import { AuthRepository } from 'src/routes/auth/auth.repository';
 import { RoleService } from 'src/routes/auth/role.service';
 import envConfig from 'src/shared/config';
+import { TypeOfVerificationCode } from 'src/shared/constants/auth.constant';
 import { generateOTPCode, isPrismaUniqueConstrantError } from 'src/shared/helpers';
 import { SharedUserRepository } from 'src/shared/repositories/shared-user.repository';
 import { HashingService } from 'src/shared/services/hashing.service';
@@ -21,9 +22,33 @@ export class AuthService {
 
   async register(body: RegisterBodyType) {
     try {
-      const { email, password, name, phoneNumber } = body;
+      const { email, password, name, phoneNumber, code } = body;
 
       const clientRoleId = await this.roleService.getClientRoleId();
+
+      const verificationCode = await this.authRepository.findUniqueVerificationCode({
+        email,
+        code,
+        type: TypeOfVerificationCode.REGISTER,
+      });
+
+      if (!verificationCode) {
+        throw new UnprocessableEntityException([
+          {
+            message: 'Invalid OTP code',
+            path: 'code',
+          },
+        ]);
+      }
+
+      if (verificationCode.expiresAt < new Date()) {
+        throw new UnprocessableEntityException([
+          {
+            message: 'OTP code has expired',
+            path: 'code',
+          },
+        ]);
+      }
 
       const hashedPassword = await this.hashingService.hash(password);
 
