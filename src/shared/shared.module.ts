@@ -6,11 +6,12 @@ import { AccessTokenGuard } from 'src/shared/guards/access-token.guard';
 import { APIKeyGuard } from 'src/shared/guards/api-key.guard';
 import { AuthenticationGuard } from 'src/shared/guards/authentication.guard';
 import { SharedUserRepository } from 'src/shared/repositories/shared-user.repository';
+import { EmailService } from 'src/shared/services/email.service';
 import { HashingService } from 'src/shared/services/hashing.service';
 import { PrismaService } from 'src/shared/services/prisma.service';
 import { TokenService } from 'src/shared/services/token.service';
 
-const sharedServices = [PrismaService, HashingService, TokenService, SharedUserRepository];
+const sharedServices = [PrismaService, HashingService, TokenService, EmailService, SharedUserRepository];
 
 @Global()
 @Module({

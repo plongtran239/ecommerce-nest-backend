@@ -27,6 +27,9 @@ const configSchema = z.object({
   ADMIN_PHONE_NUMBER: z.string(),
 
   OTP_EXPIRES_IN: z.string().nonempty(),
+
+  RESEND_API_KEY: z.string().nonempty(),
+  RESEND_EMAIL: z.string().nonempty(),
 });
 
 const configServer = configSchema.safeParse(process.env);
