@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import { RegisterBodyType, VerificationCodeType } from 'src/routes/auth/auth.model';
+import { DeviceType, RegisterBodyType, RoleType, VerificationCodeType } from 'src/routes/auth/auth.model';
 import { TypeOfVerificationCodeType } from 'src/shared/constants/auth.constant';
 import { UserType } from 'src/shared/models/shared-user.model';
 import { PrismaService } from 'src/shared/services/prisma.service';
@@ -21,14 +21,6 @@ export class AuthRepository {
     });
   }
 
-  async findRoleByName(name: string) {
-    return this.prismaService.role.findUniqueOrThrow({
-      where: {
-        name,
-      },
-    });
-  }
-
   async createVerificationCode(data: Pick<VerificationCodeType, 'email' | 'code' | 'type' | 'expiresAt'>) {
     return this.prismaService.verificationCode.upsert({
       where: {
@@ -38,6 +30,35 @@ export class AuthRepository {
       update: {
         code: data.code,
         expiresAt: data.expiresAt,
+      },
+    });
+  }
+
+  async createRefreshToken(data: { token: string; userId: number; expiresAt: Date; deviceId: number }) {
+    return this.prismaService.refreshToken.create({ data });
+  }
+
+  async createDevice(
+    data: Pick<DeviceType, 'userId' | 'ip' | 'userAgent'> & Partial<Pick<DeviceType, 'lastActive' | 'isActive'>>,
+  ) {
+    return this.prismaService.device.create({ data });
+  }
+
+  async findUniqueUserIncludeRole(
+    uniqueObject: { id: number } | { email: string },
+  ): Promise<(UserType & { role: RoleType }) | null> {
+    return this.prismaService.user.findUnique({
+      where: uniqueObject,
+      include: {
+        role: true,
+      },
+    });
+  }
+
+  async findRoleByName(name: string) {
+    return this.prismaService.role.findUniqueOrThrow({
+      where: {
+        name,
       },
     });
   }

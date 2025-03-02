@@ -2,7 +2,7 @@ import { Injectable, UnprocessableEntityException } from '@nestjs/common';
 import { addMilliseconds } from 'date-fns';
 import ms, { StringValue } from 'ms';
 
-import { RegisterBodyType, SendOTPBodyType } from 'src/routes/auth/auth.model';
+import { LoginBodyType, RegisterBodyType, SendOTPBodyType } from 'src/routes/auth/auth.model';
 import { AuthRepository } from 'src/routes/auth/auth.repository';
 import { RoleService } from 'src/routes/auth/role.service';
 import envConfig from 'src/shared/config';
@@ -11,6 +11,8 @@ import { generateOTPCode, isPrismaUniqueConstrantError } from 'src/shared/helper
 import { SharedUserRepository } from 'src/shared/repositories/shared-user.repository';
 import { EmailService } from 'src/shared/services/email.service';
 import { HashingService } from 'src/shared/services/hashing.service';
+import { TokenService } from 'src/shared/services/token.service';
+import { CreateAccessTokenPayload } from 'src/shared/types/jwt.type';
 
 @Injectable()
 export class AuthService {
@@ -19,6 +21,7 @@ export class AuthService {
     private readonly roleService: RoleService,
     private readonly authRepository: AuthRepository,
     private readonly emailService: EmailService,
+    private readonly tokenService: TokenService,
     private readonly sharedUserRepository: SharedUserRepository,
   ) {}
 
@@ -112,5 +115,71 @@ export class AuthService {
     }
 
     return verificationCode;
+  }
+
+  async login(body: LoginBodyType & { userAgent: string; ip: string }) {
+    const { email, password, userAgent, ip } = body;
+
+    const user = await this.authRepository.findUniqueUserIncludeRole({ email });
+
+    if (!user) {
+      throw new UnprocessableEntityException([
+        {
+          message: 'Email not exists',
+          path: 'email',
+        },
+      ]);
+    }
+
+    const isPasswordMatch = await this.hashingService.compare(password, user.password);
+
+    if (!isPasswordMatch) {
+      throw new UnprocessableEntityException([
+        {
+          message: 'Invalid password',
+          path: 'password',
+        },
+      ]);
+    }
+
+    const device = await this.authRepository.createDevice({
+      userId: user.id,
+      ip,
+      userAgent,
+    });
+
+    const tokens = await this.generateTokens({
+      userId: user.id,
+      deviceId: device.id,
+      roleId: user.roleId,
+      roleName: user.role.name,
+    });
+
+    return tokens;
+  }
+
+  async generateTokens(payload: CreateAccessTokenPayload) {
+    const { userId, deviceId } = payload;
+
+    const [accessToken, refreshToken] = await Promise.all([
+      this.tokenService.signAccessToken(payload),
+      this.tokenService.signRefreshToken({
+        userId,
+      }),
+    ]);
+
+    const decodedToken = await this.tokenService.verifyRefreshToken(refreshToken);
+
+    await this.authRepository.createRefreshToken({
+      token: refreshToken,
+      userId,
+      expiresAt: new Date(decodedToken.exp * 1000),
+      deviceId,
+    });
+
+    return {
+      accessToken,
+      refreshToken,
+    };
   }
 }

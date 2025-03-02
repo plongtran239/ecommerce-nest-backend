@@ -50,3 +50,51 @@ export const SendOTPBodySchema = VerificationCodeSchema.pick({
 }).strict();
 
 export type SendOTPBodyType = z.infer<typeof SendOTPBodySchema>;
+
+export const LoginBodySchema = UserSchema.pick({
+  email: true,
+  password: true,
+}).strict();
+
+export type LoginBodyType = z.infer<typeof LoginBodySchema>;
+
+export const LoginResSchema = z.object({
+  accessToken: z.string(),
+  refreshToken: z.string(),
+});
+
+export type LoginResType = z.infer<typeof LoginResSchema>;
+
+export const RefreshTokenBodySchema = z.object({
+  refreshToken: z.string(),
+});
+
+export type RefreshTokenBodyType = z.infer<typeof RefreshTokenBodySchema>;
+
+export const RefreshTokenResSchema = LoginResSchema;
+
+export const DeviceSchema = z.object({
+  id: z.number().positive(),
+  userId: z.number().positive(),
+  userAgent: z.string(),
+  ip: z.string(),
+  lastActive: z.date(),
+  createdAt: z.date(),
+  isActive: z.boolean(),
+});
+
+export type DeviceType = z.infer<typeof DeviceSchema>;
+
+export const RoleSchema = z.object({
+  id: z.number().positive(),
+  name: z.string(),
+  description: z.string(),
+  isActive: z.boolean(),
+  createdById: z.number().positive().nullable(),
+  updatedById: z.number().positive().nullable(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+  deletedAt: z.date().nullable(),
+});
+
+export type RoleType = z.infer<typeof RoleSchema>;
