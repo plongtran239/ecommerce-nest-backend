@@ -7,7 +7,7 @@ import { AuthRepository } from 'src/routes/auth/auth.repository';
 import { RoleService } from 'src/routes/auth/role.service';
 import envConfig from 'src/shared/config';
 import { TypeOfVerificationCode } from 'src/shared/constants/auth.constant';
-import { generateOTPCode, isPrismaUniqueConstrantError } from 'src/shared/helpers';
+import { generateOTPCode, isPrismaNotFoundError, isPrismaUniqueConstrantError } from 'src/shared/helpers';
 import { SharedUserRepository } from 'src/shared/repositories/shared-user.repository';
 import { EmailService } from 'src/shared/services/email.service';
 import { HashingService } from 'src/shared/services/hashing.service';
@@ -89,7 +89,7 @@ export class AuthService {
 
     const otpCode = generateOTPCode();
 
-    const verificationCode = await this.authRepository.createVerificationCode({
+    await this.authRepository.createVerificationCode({
       email,
       code: otpCode,
       type,
@@ -110,7 +110,9 @@ export class AuthService {
       ]);
     }
 
-    return verificationCode;
+    return {
+      message: 'Send OTP code successfully',
+    };
   }
 
   async login({ email, password, userAgent, ip }: LoginBodyType & { userAgent: string; ip: string }) {
@@ -187,9 +189,37 @@ export class AuthService {
 
       return tokens;
     } catch (error) {
+      if (isPrismaNotFoundError(error)) {
+        throw new UnauthorizedException('Invalid refresh token');
+      }
+
       if (error instanceof HttpException) {
         throw error;
       }
+
+      throw error;
+    }
+  }
+
+  async logout(refreshToken: string) {
+    try {
+      await this.tokenService.verifyRefreshToken(refreshToken);
+
+      const { deviceId } = await this.authRepository.deleteRefreshToken(refreshToken);
+
+      await this.authRepository.updateDevice(deviceId, {
+        isActive: false,
+      });
+
+      return {
+        message: 'Logout successfully',
+      };
+    } catch (error) {
+      if (isPrismaNotFoundError(error)) {
+        throw new UnauthorizedException('Invalid refresh token');
+      }
+
+      throw error;
     }
   }
 

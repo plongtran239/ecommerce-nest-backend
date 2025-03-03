@@ -62,7 +62,7 @@ const RefreshTokenSchema = z.object({
 });
 
 const RefreshTokenBodySchema = z.object({
-  refreshToken: z.string(),
+  refreshToken: z.string().nonempty(),
 });
 
 const RefreshTokenResSchema = LoginResSchema;
