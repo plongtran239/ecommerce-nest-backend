@@ -91,6 +91,15 @@ const RoleSchema = z.object({
   deletedAt: z.date().nullable(),
 });
 
+const GoogleAuthStateSchema = DeviceSchema.pick({
+  userAgent: true,
+  ip: true,
+});
+
+const GetAuthorizationUrlResSchema = z.object({
+  url: z.string(),
+});
+
 export {
   RegisterBodySchema,
   RegisterResSchema,
@@ -104,6 +113,8 @@ export {
   LogoutBodySchema,
   DeviceSchema,
   RoleSchema,
+  GoogleAuthStateSchema,
+  GetAuthorizationUrlResSchema,
 };
 
 type RegisterBodyType = z.infer<typeof RegisterBodySchema>;
@@ -118,6 +129,8 @@ type RefreshTokenResType = z.infer<typeof RefreshTokenResSchema>;
 type LogoutBodyType = z.infer<typeof LogoutBodySchema>;
 type DeviceType = z.infer<typeof DeviceSchema>;
 type RoleType = z.infer<typeof RoleSchema>;
+type GoogleAuthStateType = z.infer<typeof GoogleAuthStateSchema>;
+type GetAuthorizationUrlResType = z.infer<typeof GetAuthorizationUrlResSchema>;
 
 export type {
   RegisterBodyType,
@@ -132,4 +145,6 @@ export type {
   LogoutBodyType,
   DeviceType,
   RoleType,
+  GoogleAuthStateType,
+  GetAuthorizationUrlResType,
 };

@@ -21,6 +21,11 @@ const configSchema = z.object({
   REFRESH_TOKEN_EXPIRES_IN: z.string().nonempty(),
   SECRET_API_KEY: z.string().nonempty(),
 
+  GOOGLE_CLIENT_ID: z.string().nonempty(),
+  GOOGLE_CLIENT_SECRET: z.string().nonempty(),
+  GOOGLE_REDIRECT_URI: z.string().nonempty(),
+  GOOGLE_CLIENT_REDIRECT_URI: z.string().nonempty(),
+
   ADMIN_EMAIL: z.string(),
   ADMIN_NAME: z.string(),
   ADMIN_PASSWORD: z.string(),

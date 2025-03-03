@@ -61,6 +61,7 @@ export class AuthService {
         name,
         phoneNumber,
         roleId: clientRoleId,
+        avatar: null,
       });
     } catch (error) {
       if (isPrismaUniqueConstrantError(error)) {
