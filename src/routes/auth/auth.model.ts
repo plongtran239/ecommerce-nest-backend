@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { TypeOfVerificationCode } from 'src/shared/constants/auth.constant';
 import { UserSchema } from 'src/shared/models/shared-user.model';
 
-export const RegisterBodySchema = UserSchema.pick({
+const RegisterBodySchema = UserSchema.pick({
   email: true,
   name: true,
   phoneNumber: true,
@@ -24,16 +24,12 @@ export const RegisterBodySchema = UserSchema.pick({
     }
   });
 
-export type RegisterBodyType = z.infer<typeof RegisterBodySchema>;
-
-export const RegisterResSchema = UserSchema.omit({
+const RegisterResSchema = UserSchema.omit({
   password: true,
   totpSecret: true,
 });
 
-export type RegisterResType = z.infer<typeof RegisterResSchema>;
-
-export const VerificationCodeSchema = z.object({
+const VerificationCodeSchema = z.object({
   id: z.number().positive(),
   email: z.string().email(),
   code: z.string().length(6),
@@ -42,38 +38,38 @@ export const VerificationCodeSchema = z.object({
   createdAt: z.date(),
 });
 
-export type VerificationCodeType = z.infer<typeof VerificationCodeSchema>;
-
-export const SendOTPBodySchema = VerificationCodeSchema.pick({
+const SendOTPBodySchema = VerificationCodeSchema.pick({
   email: true,
   type: true,
 }).strict();
 
-export type SendOTPBodyType = z.infer<typeof SendOTPBodySchema>;
-
-export const LoginBodySchema = UserSchema.pick({
+const LoginBodySchema = UserSchema.pick({
   email: true,
   password: true,
 }).strict();
 
-export type LoginBodyType = z.infer<typeof LoginBodySchema>;
-
-export const LoginResSchema = z.object({
+const LoginResSchema = z.object({
   accessToken: z.string(),
   refreshToken: z.string(),
 });
 
-export type LoginResType = z.infer<typeof LoginResSchema>;
+const RefreshTokenSchema = z.object({
+  token: z.string(),
+  userId: z.number().positive(),
+  deviceId: z.number().positive(),
+  expiresAt: z.date(),
+  createdAt: z.date(),
+});
 
-export const RefreshTokenBodySchema = z.object({
+const RefreshTokenBodySchema = z.object({
   refreshToken: z.string(),
 });
 
-export type RefreshTokenBodyType = z.infer<typeof RefreshTokenBodySchema>;
+const RefreshTokenResSchema = LoginResSchema;
 
-export const RefreshTokenResSchema = LoginResSchema;
+const LogoutBodySchema = RefreshTokenBodySchema;
 
-export const DeviceSchema = z.object({
+const DeviceSchema = z.object({
   id: z.number().positive(),
   userId: z.number().positive(),
   userAgent: z.string(),
@@ -83,9 +79,7 @@ export const DeviceSchema = z.object({
   isActive: z.boolean(),
 });
 
-export type DeviceType = z.infer<typeof DeviceSchema>;
-
-export const RoleSchema = z.object({
+const RoleSchema = z.object({
   id: z.number().positive(),
   name: z.string(),
   description: z.string(),
@@ -97,4 +91,45 @@ export const RoleSchema = z.object({
   deletedAt: z.date().nullable(),
 });
 
-export type RoleType = z.infer<typeof RoleSchema>;
+export {
+  RegisterBodySchema,
+  RegisterResSchema,
+  VerificationCodeSchema,
+  SendOTPBodySchema,
+  LoginBodySchema,
+  LoginResSchema,
+  RefreshTokenSchema,
+  RefreshTokenBodySchema,
+  RefreshTokenResSchema,
+  LogoutBodySchema,
+  DeviceSchema,
+  RoleSchema,
+};
+
+type RegisterBodyType = z.infer<typeof RegisterBodySchema>;
+type RegisterResType = z.infer<typeof RegisterResSchema>;
+type VerificationCodeType = z.infer<typeof VerificationCodeSchema>;
+type SendOTPBodyType = z.infer<typeof SendOTPBodySchema>;
+type LoginBodyType = z.infer<typeof LoginBodySchema>;
+type LoginResType = z.infer<typeof LoginResSchema>;
+type RefreshTokenType = z.infer<typeof RefreshTokenSchema>;
+type RefreshTokenBodyType = z.infer<typeof RefreshTokenBodySchema>;
+type RefreshTokenResType = z.infer<typeof RefreshTokenResSchema>;
+type LogoutBodyType = z.infer<typeof LogoutBodySchema>;
+type DeviceType = z.infer<typeof DeviceSchema>;
+type RoleType = z.infer<typeof RoleSchema>;
+
+export type {
+  RegisterBodyType,
+  RegisterResType,
+  VerificationCodeType,
+  SendOTPBodyType,
+  LoginBodyType,
+  LoginResType,
+  RefreshTokenType,
+  RefreshTokenBodyType,
+  RefreshTokenResType,
+  LogoutBodyType,
+  DeviceType,
+  RoleType,
+};
