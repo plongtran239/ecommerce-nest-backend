@@ -1,8 +1,8 @@
-import { Injectable, UnprocessableEntityException } from '@nestjs/common';
+import { HttpException, Injectable, UnauthorizedException, UnprocessableEntityException } from '@nestjs/common';
 import { addMilliseconds } from 'date-fns';
 import ms, { StringValue } from 'ms';
 
-import { LoginBodyType, RegisterBodyType, SendOTPBodyType } from 'src/routes/auth/auth.model';
+import { LoginBodyType, RefreshTokenBodyType, RegisterBodyType, SendOTPBodyType } from 'src/routes/auth/auth.model';
 import { AuthRepository } from 'src/routes/auth/auth.repository';
 import { RoleService } from 'src/routes/auth/role.service';
 import envConfig from 'src/shared/config';
@@ -25,10 +25,8 @@ export class AuthService {
     private readonly sharedUserRepository: SharedUserRepository,
   ) {}
 
-  async register(body: RegisterBodyType) {
+  async register({ email, password, name, phoneNumber, code }: RegisterBodyType) {
     try {
-      const { email, password, name, phoneNumber, code } = body;
-
       const clientRoleId = await this.roleService.getClientRoleId();
 
       const verificationCode = await this.authRepository.findUniqueVerificationCode({
@@ -77,9 +75,7 @@ export class AuthService {
     }
   }
 
-  async sendOTP(body: SendOTPBodyType) {
-    const { email } = body;
-
+  async sendOTP({ email, type }: SendOTPBodyType) {
     const user = await this.sharedUserRepository.findUnique({ email });
 
     if (user) {
@@ -96,7 +92,7 @@ export class AuthService {
     const verificationCode = await this.authRepository.createVerificationCode({
       email,
       code: otpCode,
-      type: body.type,
+      type,
       expiresAt: addMilliseconds(new Date(), ms(envConfig.OTP_EXPIRES_IN as StringValue)),
     });
 
@@ -117,9 +113,7 @@ export class AuthService {
     return verificationCode;
   }
 
-  async login(body: LoginBodyType & { userAgent: string; ip: string }) {
-    const { email, password, userAgent, ip } = body;
-
+  async login({ email, password, userAgent, ip }: LoginBodyType & { userAgent: string; ip: string }) {
     const user = await this.authRepository.findUniqueUserIncludeRole({ email });
 
     if (!user) {
@@ -156,6 +150,47 @@ export class AuthService {
     });
 
     return tokens;
+  }
+
+  async refreshToken({ refreshToken, userAgent, ip }: RefreshTokenBodyType & { userAgent: string; ip: string }) {
+    try {
+      const { userId } = await this.tokenService.verifyRefreshToken(refreshToken);
+
+      const refreshTokenInDB = await this.authRepository.findUniqueRefreshTokenIncludeUserRole({ token: refreshToken });
+
+      if (!refreshTokenInDB) {
+        throw new UnauthorizedException('Invalid refresh token');
+      }
+
+      const {
+        deviceId,
+        user: {
+          role: { id: roleId, name: roleName },
+        },
+      } = refreshTokenInDB;
+
+      const $updateDevice = this.authRepository.updateDevice(refreshTokenInDB.deviceId, {
+        ip,
+        userAgent,
+      });
+
+      const $deleteToken = this.authRepository.deleteRefreshToken(refreshToken);
+
+      const $tokens = this.generateTokens({
+        userId,
+        deviceId,
+        roleId,
+        roleName,
+      });
+
+      const [, , tokens] = await Promise.all([$updateDevice, $deleteToken, $tokens]);
+
+      return tokens;
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+    }
   }
 
   async generateTokens(payload: CreateAccessTokenPayload) {

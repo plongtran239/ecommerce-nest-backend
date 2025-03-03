@@ -1,6 +1,12 @@
 import { Injectable } from '@nestjs/common';
 
-import { DeviceType, RegisterBodyType, RoleType, VerificationCodeType } from 'src/routes/auth/auth.model';
+import {
+  DeviceType,
+  RefreshTokenType,
+  RegisterBodyType,
+  RoleType,
+  VerificationCodeType,
+} from 'src/routes/auth/auth.model';
 import { TypeOfVerificationCodeType } from 'src/shared/constants/auth.constant';
 import { UserType } from 'src/shared/models/shared-user.model';
 import { PrismaService } from 'src/shared/services/prisma.service';
@@ -9,6 +15,7 @@ import { PrismaService } from 'src/shared/services/prisma.service';
 export class AuthRepository {
   constructor(private readonly prismaService: PrismaService) {}
 
+  // Create
   async createUser(
     user: Omit<RegisterBodyType, 'confirmPassword' | 'code'> & Pick<UserType, 'roleId'>,
   ): Promise<Omit<UserType, 'password' | 'totpSecret'>> {
@@ -44,6 +51,7 @@ export class AuthRepository {
     return this.prismaService.device.create({ data });
   }
 
+  // Find
   async findUniqueUserIncludeRole(
     uniqueObject: { id: number } | { email: string },
   ): Promise<(UserType & { role: RoleType }) | null> {
@@ -75,6 +83,40 @@ export class AuthRepository {
   ): Promise<VerificationCodeType | null> {
     return this.prismaService.verificationCode.findUnique({
       where: uniqueObject,
+    });
+  }
+
+  async findUniqueRefreshTokenIncludeUserRole(uniqueObject: {
+    token: string;
+  }): Promise<(RefreshTokenType & { user: UserType & { role: RoleType } }) | null> {
+    return this.prismaService.refreshToken.findUnique({
+      where: uniqueObject,
+      include: {
+        user: {
+          include: {
+            role: true,
+          },
+        },
+      },
+    });
+  }
+
+  // Update
+  async updateDevice(deviceId: number, data: Partial<DeviceType>) {
+    return this.prismaService.device.update({
+      where: {
+        id: deviceId,
+      },
+      data,
+    });
+  }
+
+  // Delete
+  async deleteRefreshToken(token: string) {
+    return this.prismaService.refreshToken.delete({
+      where: {
+        token,
+      },
     });
   }
 }
