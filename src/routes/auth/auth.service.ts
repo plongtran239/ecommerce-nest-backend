@@ -1,9 +1,19 @@
-import { HttpException, Injectable, UnauthorizedException, UnprocessableEntityException } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { addMilliseconds } from 'date-fns';
 import ms, { StringValue } from 'ms';
 
 import { LoginBodyType, RefreshTokenBodyType, RegisterBodyType, SendOTPBodyType } from 'src/routes/auth/auth.model';
 import { AuthRepository } from 'src/routes/auth/auth.repository';
+import {
+  EmailAlreadyExistsException,
+  EmailNotFoundException,
+  FailedToSendOTPException,
+  InvalidOTPException,
+  InvalidPasswordException,
+  OTPExpiredException,
+  RefreshTokenAlreadyUsedException,
+  UnauthorizedAccessException,
+} from 'src/routes/auth/error.model';
 import { RoleService } from 'src/routes/auth/role.service';
 import envConfig from 'src/shared/config';
 import { TypeOfVerificationCode } from 'src/shared/constants/auth.constant';
@@ -36,21 +46,11 @@ export class AuthService {
       });
 
       if (!verificationCode) {
-        throw new UnprocessableEntityException([
-          {
-            message: 'Invalid OTP code',
-            path: 'code',
-          },
-        ]);
+        throw InvalidOTPException;
       }
 
       if (verificationCode.expiresAt < new Date()) {
-        throw new UnprocessableEntityException([
-          {
-            message: 'OTP code has expired',
-            path: 'code',
-          },
-        ]);
+        throw OTPExpiredException;
       }
 
       const hashedPassword = await this.hashingService.hash(password);
@@ -65,12 +65,7 @@ export class AuthService {
       });
     } catch (error) {
       if (isPrismaUniqueConstrantError(error)) {
-        throw new UnprocessableEntityException([
-          {
-            message: 'Email already exists',
-            path: 'email',
-          },
-        ]);
+        throw EmailAlreadyExistsException;
       }
       throw error;
     }
@@ -80,12 +75,7 @@ export class AuthService {
     const user = await this.sharedUserRepository.findUnique({ email });
 
     if (user) {
-      throw new UnprocessableEntityException([
-        {
-          message: 'Email already exists',
-          path: 'email',
-        },
-      ]);
+      throw EmailAlreadyExistsException;
     }
 
     const otpCode = generateOTPCode();
@@ -103,12 +93,7 @@ export class AuthService {
     });
 
     if (error) {
-      throw new UnprocessableEntityException([
-        {
-          message: 'Failed to send OTP code',
-          path: 'code',
-        },
-      ]);
+      throw FailedToSendOTPException;
     }
 
     return {
@@ -120,23 +105,13 @@ export class AuthService {
     const user = await this.authRepository.findUniqueUserIncludeRole({ email });
 
     if (!user) {
-      throw new UnprocessableEntityException([
-        {
-          message: 'Email not exists',
-          path: 'email',
-        },
-      ]);
+      throw EmailNotFoundException;
     }
 
     const isPasswordMatch = await this.hashingService.compare(password, user.password);
 
     if (!isPasswordMatch) {
-      throw new UnprocessableEntityException([
-        {
-          message: 'Invalid password',
-          path: 'password',
-        },
-      ]);
+      throw InvalidPasswordException;
     }
 
     const device = await this.authRepository.createDevice({
@@ -162,7 +137,7 @@ export class AuthService {
       const refreshTokenInDB = await this.authRepository.findUniqueRefreshTokenIncludeUserRole({ token: refreshToken });
 
       if (!refreshTokenInDB) {
-        throw new UnauthorizedException('Invalid refresh token');
+        throw RefreshTokenAlreadyUsedException;
       }
 
       const {
@@ -191,14 +166,14 @@ export class AuthService {
       return tokens;
     } catch (error) {
       if (isPrismaNotFoundError(error)) {
-        throw new UnauthorizedException('Invalid refresh token');
+        throw RefreshTokenAlreadyUsedException;
       }
 
       if (error instanceof HttpException) {
         throw error;
       }
 
-      throw error;
+      throw UnauthorizedAccessException;
     }
   }
 
@@ -217,10 +192,10 @@ export class AuthService {
       };
     } catch (error) {
       if (isPrismaNotFoundError(error)) {
-        throw new UnauthorizedException('Invalid refresh token');
+        throw RefreshTokenAlreadyUsedException;
       }
 
-      throw error;
+      throw UnauthorizedAccessException;
     }
   }
 

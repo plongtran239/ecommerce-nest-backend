@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { GoogleAuthStateType } from 'src/routes/auth/auth.model';
 import { AuthRepository } from 'src/routes/auth/auth.repository';
 import { AuthService } from 'src/routes/auth/auth.service';
+import { GoogleUserInfoError } from 'src/routes/auth/error.model';
 import { RoleService } from 'src/routes/auth/role.service';
 import envConfig from 'src/shared/config';
 import { HashingService } from 'src/shared/services/hashing.service';
@@ -68,7 +69,7 @@ export class GoogleService {
       const { data } = await oauth2.userinfo.get();
 
       if (!data.email) {
-        throw new Error("Can't get email from Google");
+        throw GoogleUserInfoError;
       }
 
       let user = await this.authRepository.findUniqueUserIncludeRole({ email: data.email });
