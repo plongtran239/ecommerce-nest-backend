@@ -2,7 +2,13 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { addMilliseconds } from 'date-fns';
 import ms, { StringValue } from 'ms';
 
-import { LoginBodyType, RefreshTokenBodyType, RegisterBodyType, SendOTPBodyType } from 'src/routes/auth/auth.model';
+import {
+  ForgotPasswordBodyType,
+  LoginBodyType,
+  RefreshTokenBodyType,
+  RegisterBodyType,
+  SendOTPBodyType,
+} from 'src/routes/auth/auth.model';
 import { AuthRepository } from 'src/routes/auth/auth.repository';
 import {
   EmailAlreadyExistsException,
@@ -16,7 +22,7 @@ import {
 } from 'src/routes/auth/error.model';
 import { RoleService } from 'src/routes/auth/role.service';
 import envConfig from 'src/shared/config';
-import { TypeOfVerificationCode } from 'src/shared/constants/auth.constant';
+import { TypeOfVerificationCode, TypeOfVerificationCodeType } from 'src/shared/constants/auth.constant';
 import { generateOTPCode, isPrismaNotFoundError, isPrismaUniqueConstrantError } from 'src/shared/helpers';
 import { SharedUserRepository } from 'src/shared/repositories/shared-user.repository';
 import { EmailService } from 'src/shared/services/email.service';
@@ -37,32 +43,29 @@ export class AuthService {
 
   async register({ email, password, name, phoneNumber, code }: RegisterBodyType) {
     try {
+      await this.validateVerificationCode({ email, code, type: TypeOfVerificationCode.REGISTER });
+
       const clientRoleId = await this.roleService.getClientRoleId();
-
-      const verificationCode = await this.authRepository.findUniqueVerificationCode({
-        email,
-        code,
-        type: TypeOfVerificationCode.REGISTER,
-      });
-
-      if (!verificationCode) {
-        throw InvalidOTPException;
-      }
-
-      if (verificationCode.expiresAt < new Date()) {
-        throw OTPExpiredException;
-      }
 
       const hashedPassword = await this.hashingService.hash(password);
 
-      return await this.authRepository.createUser({
-        email,
-        password: hashedPassword,
-        name,
-        phoneNumber,
-        roleId: clientRoleId,
-        avatar: null,
-      });
+      const [user] = await Promise.all([
+        this.authRepository.createUser({
+          email,
+          password: hashedPassword,
+          name,
+          phoneNumber,
+          roleId: clientRoleId,
+          avatar: null,
+        }),
+        this.authRepository.deleteVerificationCode({
+          email,
+          code,
+          type: TypeOfVerificationCode.REGISTER,
+        }),
+      ]);
+
+      return user;
     } catch (error) {
       if (isPrismaUniqueConstrantError(error)) {
         throw EmailAlreadyExistsException;
@@ -74,8 +77,12 @@ export class AuthService {
   async sendOTP({ email, type }: SendOTPBodyType) {
     const user = await this.sharedUserRepository.findUnique({ email });
 
-    if (user) {
+    if (user && type === TypeOfVerificationCode.REGISTER) {
       throw EmailAlreadyExistsException;
+    }
+
+    if (!user && type !== TypeOfVerificationCode.FORGOT_PASSWORD) {
+      throw EmailNotFoundException;
     }
 
     const otpCode = generateOTPCode();
@@ -199,6 +206,37 @@ export class AuthService {
     }
   }
 
+  async forgotPassword({ email, code, newPassword }: ForgotPasswordBodyType) {
+    const user = await this.sharedUserRepository.findUnique({ email });
+
+    if (!user) {
+      throw EmailNotFoundException;
+    }
+
+    await this.validateVerificationCode({ email, code, type: TypeOfVerificationCode.FORGOT_PASSWORD });
+
+    const hashedPassword = await this.hashingService.hash(newPassword);
+
+    await Promise.all([
+      this.authRepository.updateUser(
+        { id: user.id },
+        {
+          password: hashedPassword,
+          updatedAt: new Date(),
+        },
+      ),
+      this.authRepository.deleteVerificationCode({
+        email,
+        code,
+        type: TypeOfVerificationCode.FORGOT_PASSWORD,
+      }),
+    ]);
+
+    return {
+      message: 'Change password successfully',
+    };
+  }
+
   async generateTokens(payload: CreateAccessTokenPayload) {
     const { userId, deviceId } = payload;
 
@@ -222,5 +260,31 @@ export class AuthService {
       accessToken,
       refreshToken,
     };
+  }
+
+  async validateVerificationCode({
+    code,
+    email,
+    type,
+  }: {
+    email: string;
+    code: string;
+    type: TypeOfVerificationCodeType;
+  }) {
+    const verificationCode = await this.authRepository.findUniqueVerificationCode({
+      email,
+      code,
+      type,
+    });
+
+    if (!verificationCode) {
+      throw InvalidOTPException;
+    }
+
+    if (verificationCode.expiresAt < new Date()) {
+      throw OTPExpiredException;
+    }
+
+    return verificationCode;
   }
 }

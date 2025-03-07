@@ -116,12 +116,37 @@ export class AuthRepository {
     });
   }
 
+  async updateUser(
+    uniqueObject: { id: number } | { email: string },
+    data: Partial<Omit<UserType, 'id'>>,
+  ): Promise<UserType> {
+    return this.prismaService.user.update({
+      where: uniqueObject,
+      data,
+    });
+  }
+
   // Delete
   async deleteRefreshToken(token: string) {
     return this.prismaService.refreshToken.delete({
       where: {
         token,
       },
+    });
+  }
+
+  async deleteVerificationCode(
+    uniqueObject:
+      | { id: number }
+      | { email: string }
+      | {
+          email: string;
+          code: string;
+          type: TypeOfVerificationCodeType;
+        },
+  ) {
+    return this.prismaService.verificationCode.delete({
+      where: uniqueObject,
     });
   }
 }

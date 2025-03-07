@@ -100,6 +100,24 @@ const GetAuthorizationUrlResSchema = z.object({
   url: z.string(),
 });
 
+const ForgotPasswordBodySchema = z
+  .object({
+    email: z.string().email(),
+    code: z.string().length(6),
+    newPassword: z.string().min(6).max(100),
+    confirmPassword: z.string().min(6).max(100),
+  })
+  .strict()
+  .superRefine(({ newPassword, confirmPassword }, ctx) => {
+    if (newPassword !== confirmPassword) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Password and confirm password must match',
+        path: ['confirmPassword'],
+      });
+    }
+  });
+
 export {
   RegisterBodySchema,
   RegisterResSchema,
@@ -115,6 +133,7 @@ export {
   RoleSchema,
   GoogleAuthStateSchema,
   GetAuthorizationUrlResSchema,
+  ForgotPasswordBodySchema,
 };
 
 type RegisterBodyType = z.infer<typeof RegisterBodySchema>;
@@ -131,6 +150,7 @@ type DeviceType = z.infer<typeof DeviceSchema>;
 type RoleType = z.infer<typeof RoleSchema>;
 type GoogleAuthStateType = z.infer<typeof GoogleAuthStateSchema>;
 type GetAuthorizationUrlResType = z.infer<typeof GetAuthorizationUrlResSchema>;
+type ForgotPasswordBodyType = z.infer<typeof ForgotPasswordBodySchema>;
 
 export type {
   RegisterBodyType,
@@ -147,4 +167,5 @@ export type {
   RoleType,
   GoogleAuthStateType,
   GetAuthorizationUrlResType,
+  ForgotPasswordBodyType,
 };
