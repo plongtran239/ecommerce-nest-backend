@@ -262,7 +262,7 @@ export class AuthService {
     };
   }
 
-  async validateVerificationCode({
+  private async validateVerificationCode({
     code,
     email,
     type,
