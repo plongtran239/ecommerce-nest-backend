@@ -3,6 +3,7 @@ import { addMilliseconds } from 'date-fns';
 import ms, { StringValue } from 'ms';
 
 import {
+  DisableTwoFactorBodyType,
   ForgotPasswordBodyType,
   LoginBodyType,
   RefreshTokenBodyType,
@@ -20,6 +21,7 @@ import {
   OTPExpiredException,
   RefreshTokenAlreadyUsedException,
   TOTPAlreadyEnabledException,
+  TOTPNotEnabledException,
   UnauthorizedAccessException,
 } from 'src/routes/auth/error.model';
 import { RoleService } from 'src/routes/auth/role.service';
@@ -315,6 +317,47 @@ export class AuthService {
     return {
       secret,
       uri,
+    };
+  }
+
+  async disableTwoFactorAuth(data: DisableTwoFactorBodyType & { userId: number }) {
+    const { code, totpCode, userId } = data;
+
+    const user = await this.sharedUserRepository.findUnique({ id: userId });
+
+    if (!user) {
+      throw EmailNotFoundException;
+    }
+
+    if (!user.totpSecret) {
+      throw TOTPNotEnabledException;
+    }
+
+    if (totpCode) {
+      const isTOTPValid = this.twoFactorAuthService.verifyTOTP({
+        email: user.email,
+        token: totpCode,
+        secret: user.totpSecret,
+      });
+
+      if (!isTOTPValid) {
+        throw InvalidTOTPAndCodeException;
+      }
+    } else if (code) {
+      await this.validateVerificationCode({ email: user.email, code, type: TypeOfVerificationCode.DISABLE_2FA });
+    }
+
+    await this.authRepository.updateUser(
+      {
+        id: userId,
+      },
+      {
+        totpSecret: null,
+      },
+    );
+
+    return {
+      message: 'Disable 2FA successfully',
     };
   }
 
