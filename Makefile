@@ -24,3 +24,6 @@ reinstall:
 
 seed:
 	npm run seed
+
+db-push:
+	npx prisma db push
