@@ -13,12 +13,15 @@ import {
   RegisterBodyDTO,
   RegisterResDTO,
   SendOTPBodyDTO,
+  TwoFactorSetupResDTO,
 } from 'src/routes/auth/auth.dto';
 import { AuthService } from 'src/routes/auth/auth.service';
 import { GoogleService } from 'src/routes/auth/google.service';
 import envConfig from 'src/shared/config';
 import { IsPublic } from 'src/shared/decorators/auth.decorator';
 import { UserAgent } from 'src/shared/decorators/user-agent.decorator';
+import { User } from 'src/shared/decorators/user.decorator';
+import { EmptyBodyDTO } from 'src/shared/dtos/request.dto';
 import { MessageResDTO } from 'src/shared/dtos/response.dto';
 
 @Controller('auth')
@@ -101,5 +104,11 @@ export class AuthController {
   @ZodSerializerDto(MessageResDTO)
   forgotPassword(@Body() body: ForgotPasswordBodyDTO) {
     return this.authService.forgotPassword(body);
+  }
+
+  @Post('2fa/setup')
+  @ZodSerializerDto(TwoFactorSetupResDTO)
+  setupTwoFactorAuth(@Body() _: EmptyBodyDTO, @User('userId') userId: number) {
+    return this.authService.setupTwoFactorAuth(userId);
   }
 }

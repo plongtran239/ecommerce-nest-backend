@@ -13,6 +13,8 @@ if (!fs.existsSync(path.resolve('.env'))) {
 }
 
 const configSchema = z.object({
+  APP_NAME: z.string().nonempty(),
+
   DATABASE_URL: z.string().nonempty(),
 
   ACCESS_TOKEN_SECRET: z.string().nonempty(),

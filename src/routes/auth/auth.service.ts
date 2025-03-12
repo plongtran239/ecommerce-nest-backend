@@ -18,6 +18,7 @@ import {
   InvalidPasswordException,
   OTPExpiredException,
   RefreshTokenAlreadyUsedException,
+  TOTPAlreadyEnabledException,
   UnauthorizedAccessException,
 } from 'src/routes/auth/error.model';
 import { RoleService } from 'src/routes/auth/role.service';
@@ -25,6 +26,7 @@ import envConfig from 'src/shared/config';
 import { TypeOfVerificationCode, TypeOfVerificationCodeType } from 'src/shared/constants/auth.constant';
 import { generateOTPCode, isPrismaNotFoundError, isPrismaUniqueConstrantError } from 'src/shared/helpers';
 import { SharedUserRepository } from 'src/shared/repositories/shared-user.repository';
+import { TwoFactorAuthService } from 'src/shared/services/2fa.service';
 import { EmailService } from 'src/shared/services/email.service';
 import { HashingService } from 'src/shared/services/hashing.service';
 import { TokenService } from 'src/shared/services/token.service';
@@ -38,6 +40,7 @@ export class AuthService {
     private readonly authRepository: AuthRepository,
     private readonly emailService: EmailService,
     private readonly tokenService: TokenService,
+    private readonly twoFactorAuthService: TwoFactorAuthService,
     private readonly sharedUserRepository: SharedUserRepository,
   ) {}
 
@@ -263,6 +266,34 @@ export class AuthService {
     return {
       accessToken,
       refreshToken,
+    };
+  }
+
+  async setupTwoFactorAuth(userId: number) {
+    const user = await this.sharedUserRepository.findUnique({ id: userId });
+
+    if (!user) {
+      throw EmailNotFoundException;
+    }
+
+    if (user.totpSecret) {
+      throw TOTPAlreadyEnabledException;
+    }
+
+    const { secret, uri } = this.twoFactorAuthService.generateTOTPSecret(user.email);
+
+    await this.authRepository.updateUser(
+      {
+        id: userId,
+      },
+      {
+        totpSecret: secret,
+      },
+    );
+
+    return {
+      secret,
+      uri,
     };
   }
 

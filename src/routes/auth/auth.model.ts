@@ -154,7 +154,7 @@ const DisableTwoFactorBodySchema = z
 
 const TwoFactorSetupResSchema = z.object({
   secret: z.string(),
-  url: z.string(),
+  uri: z.string(),
 });
 
 export {
