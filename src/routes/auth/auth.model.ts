@@ -56,7 +56,24 @@ const LoginBodySchema = UserSchema.pick({
     totpCode: z.string().length(6).optional(), //2FA code
     code: z.string().length(6).optional(), //Email OTP code
   })
-  .strict();
+  .strict()
+  .superRefine(({ totpCode, code }, ctx) => {
+    if (totpCode !== undefined && code !== undefined) {
+      const message = 'Only provide 2FA code or OTP code. Not both';
+
+      ctx.addIssue({
+        code: 'custom',
+        message,
+        path: ['totpCode'],
+      });
+
+      ctx.addIssue({
+        code: 'custom',
+        message,
+        path: ['code'],
+      });
+    }
+  });
 
 const LoginResSchema = z.object({
   accessToken: z.string(),

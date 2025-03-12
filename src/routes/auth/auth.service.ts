@@ -16,6 +16,7 @@ import {
   FailedToSendOTPException,
   InvalidOTPException,
   InvalidPasswordException,
+  InvalidTOTPAndCodeException,
   OTPExpiredException,
   RefreshTokenAlreadyUsedException,
   TOTPAlreadyEnabledException,
@@ -113,7 +114,7 @@ export class AuthService {
     };
   }
 
-  async login({ email, password, userAgent, ip }: LoginBodyType & { userAgent: string; ip: string }) {
+  async login({ email, password, userAgent, ip, code, totpCode }: LoginBodyType & { userAgent: string; ip: string }) {
     const user = await this.authRepository.findUniqueUserIncludeRole({ email });
 
     if (!user) {
@@ -124,6 +125,26 @@ export class AuthService {
 
     if (!isPasswordMatch) {
       throw InvalidPasswordException;
+    }
+
+    if (user.totpSecret) {
+      if (!code && !totpCode) {
+        throw InvalidTOTPAndCodeException;
+      }
+
+      if (totpCode) {
+        const isTOTPValid = this.twoFactorAuthService.verifyTOTP({
+          email: user.email,
+          token: totpCode,
+          secret: user.totpSecret,
+        });
+
+        if (!isTOTPValid) {
+          throw InvalidTOTPAndCodeException;
+        }
+      } else if (code) {
+        await this.validateVerificationCode({ email, code, type: TypeOfVerificationCode.LOGIN });
+      }
     }
 
     const device = await this.authRepository.createDevice({

@@ -47,6 +47,13 @@ export const InvalidTOTPAndCodeException = new UnprocessableEntityException([
   },
 ]);
 
+export const InvalidTOTPException = new UnprocessableEntityException([
+  {
+    message: 'Error.InvalidTOTP',
+    path: 'totpCode',
+  },
+]);
+
 // Email related errors
 export const EmailAlreadyExistsException = new UnprocessableEntityException([
   {
