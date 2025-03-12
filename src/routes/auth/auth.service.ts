@@ -59,9 +59,11 @@ export class AuthService {
           avatar: null,
         }),
         this.authRepository.deleteVerificationCode({
-          email,
-          code,
-          type: TypeOfVerificationCode.REGISTER,
+          email_code_type: {
+            email,
+            code,
+            type: TypeOfVerificationCode.REGISTER,
+          },
         }),
       ]);
 
@@ -226,9 +228,11 @@ export class AuthService {
         },
       ),
       this.authRepository.deleteVerificationCode({
-        email,
-        code,
-        type: TypeOfVerificationCode.FORGOT_PASSWORD,
+        email_code_type: {
+          email,
+          code,
+          type: TypeOfVerificationCode.FORGOT_PASSWORD,
+        },
       }),
     ]);
 
@@ -272,9 +276,11 @@ export class AuthService {
     type: TypeOfVerificationCodeType;
   }) {
     const verificationCode = await this.authRepository.findUniqueVerificationCode({
-      email,
-      code,
-      type,
+      email_code_type: {
+        email,
+        code,
+        type,
+      },
     });
 
     if (!verificationCode) {

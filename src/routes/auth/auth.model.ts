@@ -33,7 +33,12 @@ const VerificationCodeSchema = z.object({
   id: z.number().positive(),
   email: z.string().email(),
   code: z.string().length(6),
-  type: z.enum([TypeOfVerificationCode.FORGOT_PASSWORD, TypeOfVerificationCode.REGISTER]),
+  type: z.enum([
+    TypeOfVerificationCode.FORGOT_PASSWORD,
+    TypeOfVerificationCode.REGISTER,
+    TypeOfVerificationCode.LOGIN,
+    TypeOfVerificationCode.DISABLE_2FA,
+  ]),
   expiresAt: z.date(),
   createdAt: z.date(),
 });
@@ -46,7 +51,12 @@ const SendOTPBodySchema = VerificationCodeSchema.pick({
 const LoginBodySchema = UserSchema.pick({
   email: true,
   password: true,
-}).strict();
+})
+  .extend({
+    totpCode: z.string().length(6).optional(), //2FA code
+    code: z.string().length(6).optional(), //Email OTP code
+  })
+  .strict();
 
 const LoginResSchema = z.object({
   accessToken: z.string(),
@@ -118,6 +128,35 @@ const ForgotPasswordBodySchema = z
     }
   });
 
+const DisableTwoFactorBodySchema = z
+  .object({
+    totpCode: z.string().length(6).optional(),
+    code: z.string().length(6).optional(),
+  })
+  .strict()
+  .superRefine(({ totpCode, code }, ctx) => {
+    if ((totpCode !== undefined) === (code !== undefined)) {
+      const message = 'Only provide 2FA code or OTP code. Not both';
+
+      ctx.addIssue({
+        code: 'custom',
+        message,
+        path: ['totpCode'],
+      });
+
+      ctx.addIssue({
+        code: 'custom',
+        message,
+        path: ['code'],
+      });
+    }
+  });
+
+const TwoFactorSetupResSchema = z.object({
+  secret: z.string(),
+  url: z.string(),
+});
+
 export {
   RegisterBodySchema,
   RegisterResSchema,
@@ -134,6 +173,8 @@ export {
   GoogleAuthStateSchema,
   GetAuthorizationUrlResSchema,
   ForgotPasswordBodySchema,
+  DisableTwoFactorBodySchema,
+  TwoFactorSetupResSchema,
 };
 
 type RegisterBodyType = z.infer<typeof RegisterBodySchema>;
@@ -151,6 +192,8 @@ type RoleType = z.infer<typeof RoleSchema>;
 type GoogleAuthStateType = z.infer<typeof GoogleAuthStateSchema>;
 type GetAuthorizationUrlResType = z.infer<typeof GetAuthorizationUrlResSchema>;
 type ForgotPasswordBodyType = z.infer<typeof ForgotPasswordBodySchema>;
+type DisableTwoFactorBodyType = z.infer<typeof DisableTwoFactorBodySchema>;
+type TwoFactorSetupResType = z.infer<typeof TwoFactorSetupResSchema>;
 
 export type {
   RegisterBodyType,
@@ -168,4 +211,6 @@ export type {
   GoogleAuthStateType,
   GetAuthorizationUrlResType,
   ForgotPasswordBodyType,
+  DisableTwoFactorBodyType,
+  TwoFactorSetupResType,
 };
