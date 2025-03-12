@@ -27,3 +27,6 @@ seed:
 
 db-push:
 	npx prisma db push
+
+db-studio:
+	npx prisma studio

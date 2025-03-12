@@ -3,15 +3,6 @@ import { addMilliseconds } from 'date-fns';
 import ms, { StringValue } from 'ms';
 
 import {
-  DisableTwoFactorBodyType,
-  ForgotPasswordBodyType,
-  LoginBodyType,
-  RefreshTokenBodyType,
-  RegisterBodyType,
-  SendOTPBodyType,
-} from 'src/routes/auth/auth.model';
-import { AuthRepository } from 'src/routes/auth/auth.repository';
-import {
   EmailAlreadyExistsException,
   EmailNotFoundException,
   FailedToSendOTPException,
@@ -23,7 +14,16 @@ import {
   TOTPAlreadyEnabledException,
   TOTPNotEnabledException,
   UnauthorizedAccessException,
-} from 'src/routes/auth/error.model';
+} from 'src/routes/auth/auth.error';
+import {
+  DisableTwoFactorBodyType,
+  ForgotPasswordBodyType,
+  LoginBodyType,
+  RefreshTokenBodyType,
+  RegisterBodyType,
+  SendOTPBodyType,
+} from 'src/routes/auth/auth.model';
+import { AuthRepository } from 'src/routes/auth/auth.repository';
 import { RoleService } from 'src/routes/auth/role.service';
 import envConfig from 'src/shared/config';
 import { TypeOfVerificationCode, TypeOfVerificationCodeType } from 'src/shared/constants/auth.constant';
