@@ -28,5 +28,11 @@ seed:
 db-push:
 	npx prisma db push
 
+db-generate:
+	npx prisma migrate dev --create-only
+
+db-migrate:
+	npx prisma migrate dev	
+
 db-studio:
 	npx prisma studio
