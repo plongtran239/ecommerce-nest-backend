@@ -11,6 +11,7 @@
     "email:build": "email build",
     "email:export": "email export",
     "seed": "ts-node scripts",
+    "seed:permission": "ts-node scripts/seed-permission.ts",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
