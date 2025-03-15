@@ -17,7 +17,6 @@ export class LanguageService {
       if (isPrismaUniqueConstrantError(error)) {
         throw LanguageAlreadyExistsException;
       }
-
       throw error;
     }
   }
@@ -48,6 +47,10 @@ export class LanguageService {
       if (isPrismaNotFoundError(error)) {
         throw NotFoundRecordException;
       }
+      if (isPrismaUniqueConstrantError(error)) {
+        throw LanguageAlreadyExistsException;
+      }
+      throw error;
     }
   }
 
@@ -62,6 +65,7 @@ export class LanguageService {
       if (isPrismaNotFoundError(error)) {
         throw NotFoundRecordException;
       }
+      throw error;
     }
   }
 }

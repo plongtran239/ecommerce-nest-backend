@@ -17,6 +17,7 @@ export const UserSchema = z.object({
   deletedAt: z.date().nullable(),
   createdById: z.number().positive().nullable(),
   updatedById: z.number().positive().nullable(),
+  deletedById: z.number().positive().nullable(),
 });
 
 export type UserType = z.infer<typeof UserSchema>;
