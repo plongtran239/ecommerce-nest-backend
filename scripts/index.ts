@@ -1,5 +1,5 @@
 import envConfig from 'src/shared/config';
-import { ROLE } from 'src/shared/constants/role.constant';
+import { RoleName } from 'src/shared/constants/role.constant';
 import { HashingService } from 'src/shared/services/hashing.service';
 import { PrismaService } from 'src/shared/services/prisma.service';
 
@@ -16,15 +16,15 @@ const main = async () => {
   const roles = await prismaService.role.createMany({
     data: [
       {
-        name: ROLE.Admin,
+        name: RoleName.Admin,
         description: 'Role for Admin',
       },
       {
-        name: ROLE.Client,
+        name: RoleName.Client,
         description: 'Role for Client',
       },
       {
-        name: ROLE.Seller,
+        name: RoleName.Seller,
         description: 'Role for Seller',
       },
     ],
@@ -32,7 +32,7 @@ const main = async () => {
 
   const adminRole = await prismaService.role.findUniqueOrThrow({
     where: {
-      name: ROLE.Admin,
+      name: RoleName.Admin,
     },
   });
 

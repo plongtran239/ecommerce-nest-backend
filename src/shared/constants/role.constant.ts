@@ -1,4 +1,4 @@
-export const ROLE = {
+export const RoleName = {
   Admin: 'Admin',
   Client: 'Client',
   Seller: 'Seller',

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 import { AuthRepository } from 'src/routes/auth/auth.repository';
-import { ROLE } from 'src/shared/constants/role.constant';
+import { RoleName } from 'src/shared/constants/role.constant';
 
 @Injectable()
 export class RoleService {
@@ -14,7 +14,7 @@ export class RoleService {
       return this.clientRoleId;
     }
 
-    const role = await this.authRepository.findRoleByName(ROLE.Client);
+    const role = await this.authRepository.findRoleByName(RoleName.Client);
 
     this.clientRoleId = role.id;
 
