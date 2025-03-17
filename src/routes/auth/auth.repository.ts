@@ -72,12 +72,13 @@ export class AuthRepository {
     });
   }
 
-  async findRoleByName(name: string) {
-    return this.prismaService.role.findUniqueOrThrow({
-      where: {
-        name,
-      },
-    });
+  async findRoleByName(name: string): Promise<RoleType[]> {
+    return this.prismaService.$queryRaw`
+      SELECT * FROM "Role" 
+      WHERE name = ${name} 
+      AND "deletedAt" IS NULL
+      LIMIT 1
+    `;
   }
 
   async findUniqueVerificationCode(

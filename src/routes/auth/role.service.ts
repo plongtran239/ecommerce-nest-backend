@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
 
+import { RoleType } from 'src/routes/auth/auth.model';
 import { AuthRepository } from 'src/routes/auth/auth.repository';
 import { RoleName } from 'src/shared/constants/role.constant';
+import { NotFoundRecordException } from 'src/shared/error';
 
 @Injectable()
 export class RoleService {
@@ -14,7 +16,13 @@ export class RoleService {
       return this.clientRoleId;
     }
 
-    const role = await this.authRepository.findRoleByName(RoleName.Client);
+    const role: RoleType = await this.authRepository.findRoleByName(RoleName.Client).then((roles: RoleType[]) => {
+      if (roles.length === 0) {
+        throw NotFoundRecordException;
+      }
+
+      return roles[0];
+    });
 
     this.clientRoleId = role.id;
 

@@ -1,5 +1,6 @@
 import envConfig from 'src/shared/config';
 import { RoleName } from 'src/shared/constants/role.constant';
+import { NotFoundRecordException } from 'src/shared/error';
 import { HashingService } from 'src/shared/services/hashing.service';
 import { PrismaService } from 'src/shared/services/prisma.service';
 
@@ -30,11 +31,16 @@ const main = async () => {
     ],
   });
 
-  const adminRole = await prismaService.role.findUniqueOrThrow({
-    where: {
-      name: RoleName.Admin,
-    },
-  });
+  const adminRoleId: { id: number }[] = await prismaService.$queryRaw`
+    SELECT id FROM "Role" 
+    WHERE name = ${RoleName.Admin} 
+    AND "deletedAt" IS NULL
+    LIMIT 1
+  `;
+
+  if (adminRoleId.length === 0) {
+    throw NotFoundRecordException;
+  }
 
   const hashedPassword = await hashingService.hash(envConfig.ADMIN_PASSWORD);
 
@@ -44,7 +50,7 @@ const main = async () => {
       name: envConfig.ADMIN_NAME,
       password: hashedPassword,
       phoneNumber: envConfig.ADMIN_PHONE_NUMBER,
-      roleId: adminRole.id,
+      roleId: adminRoleId[0].id,
     },
   });
 
