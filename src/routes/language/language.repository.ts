@@ -7,7 +7,7 @@ import { PrismaService } from 'src/shared/services/prisma.service';
 export class LanguageRepository {
   constructor(private readonly prismaService: PrismaService) {}
 
-  create({ data, createdById }: { data: CreateLanguageBodyType; createdById: number }): Promise<LanguageType> {
+  async create({ data, createdById }: { data: CreateLanguageBodyType; createdById: number }): Promise<LanguageType> {
     return this.prismaService.language.create({
       data: {
         ...data,
@@ -16,7 +16,7 @@ export class LanguageRepository {
     });
   }
 
-  findAll(): Promise<LanguageType[]> {
+  async findAll(): Promise<LanguageType[]> {
     return this.prismaService.language.findMany({
       where: {
         deletedAt: null,
@@ -24,7 +24,7 @@ export class LanguageRepository {
     });
   }
 
-  findById(id: string): Promise<LanguageType | null> {
+  async findById(id: string): Promise<LanguageType | null> {
     return this.prismaService.language.findUnique({
       where: {
         id,
@@ -33,7 +33,7 @@ export class LanguageRepository {
     });
   }
 
-  update({
+  async update({
     id,
     data,
     updatedById,
@@ -54,7 +54,7 @@ export class LanguageRepository {
     });
   }
 
-  delete({ id, deletedById }: { id: string; deletedById: number }, isHard?: boolean): Promise<LanguageType> {
+  async delete({ id, deletedById }: { id: string; deletedById: number }, isHard?: boolean): Promise<LanguageType> {
     if (isHard) {
       return this.prismaService.language.delete({
         where: {

@@ -13,7 +13,13 @@ import { PrismaService } from 'src/shared/services/prisma.service';
 export class PermissionRepository {
   constructor(private readonly prismaService: PrismaService) {}
 
-  create({ data, createdById }: { data: CreatePermissionBodyType; createdById: number }): Promise<PermissionType> {
+  async create({
+    data,
+    createdById,
+  }: {
+    data: CreatePermissionBodyType;
+    createdById: number;
+  }): Promise<PermissionType> {
     return this.prismaService.permission.create({
       data: {
         ...data,

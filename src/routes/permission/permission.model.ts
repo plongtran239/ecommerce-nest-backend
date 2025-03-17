@@ -15,16 +15,18 @@ export const CreatePermissionResSchema = PermissionSchema;
 export const GetPermissionsQuerySchema = PaginationSchema.pick({
   page: true,
   limit: true,
-});
+}).strict();
 
 export const GetPermissionsResSchema = PaginationSchema.extend({
   data: z.array(PermissionSchema),
   totalItems: z.number().int().positive(),
 });
 
-export const GetPermisstionParamsSchema = z.object({
-  permissionId: z.coerce.number().positive(),
-});
+export const GetPermisstionParamsSchema = z
+  .object({
+    permissionId: z.coerce.number().positive(),
+  })
+  .strict();
 
 export const GetDetailPermissionResSchema = PermissionSchema;
 
