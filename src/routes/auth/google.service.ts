@@ -7,7 +7,7 @@ import { GoogleUserInfoError } from 'src/routes/auth/auth.error';
 import { GoogleAuthStateType } from 'src/routes/auth/auth.model';
 import { AuthRepository } from 'src/routes/auth/auth.repository';
 import { AuthService } from 'src/routes/auth/auth.service';
-import { RoleService } from 'src/routes/auth/role.service';
+import { RoleService } from 'src/routes/role/role.service';
 import envConfig from 'src/shared/config';
 import { HashingService } from 'src/shared/services/hashing.service';
 

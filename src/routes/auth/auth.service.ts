@@ -24,7 +24,7 @@ import {
   SendOTPBodyType,
 } from 'src/routes/auth/auth.model';
 import { AuthRepository } from 'src/routes/auth/auth.repository';
-import { RoleService } from 'src/routes/auth/role.service';
+import { RoleService } from 'src/routes/role/role.service';
 import envConfig from 'src/shared/config';
 import { TypeOfVerificationCode, TypeOfVerificationCodeType } from 'src/shared/constants/auth.constant';
 import { generateOTPCode, isPrismaNotFoundError, isPrismaUniqueConstrantError } from 'src/shared/helpers';

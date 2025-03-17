@@ -1,30 +1,7 @@
 import { z } from 'zod';
 
-import { HTTPMethod } from 'src/shared/constants/role.constant';
 import { PaginationSchema } from 'src/shared/models/pagination.model';
-
-export const PermissionSchema = z.object({
-  id: z.number().positive(),
-  name: z.string().max(500),
-  description: z.string().optional(),
-  path: z.string().max(1000),
-  method: z.enum([
-    HTTPMethod.GET,
-    HTTPMethod.POST,
-    HTTPMethod.PUT,
-    HTTPMethod.DELETE,
-    HTTPMethod.PATCH,
-    HTTPMethod.OPTIONS,
-    HTTPMethod.HEAD,
-  ]),
-
-  createdById: z.number().nullable(),
-  updatedById: z.number().nullable(),
-  deletedById: z.number().nullable(),
-  createdAt: z.date(),
-  updatedAt: z.date(),
-  deletedAt: z.date().nullable(),
-});
+import { PermissionSchema } from 'src/shared/models/shared-permission.model';
 
 export const CreatePermissionBodySchema = PermissionSchema.pick({
   name: true,
@@ -55,7 +32,6 @@ export const UpdatePermissionBodySchema = CreatePermissionBodySchema;
 
 export const UpdatePermissionResSchema = PermissionSchema;
 
-export type PermissionType = z.infer<typeof PermissionSchema>;
 export type CreatePermissionBodyType = z.infer<typeof CreatePermissionBodySchema>;
 export type CreatePermissionResType = z.infer<typeof CreatePermissionResSchema>;
 export type GetPermissionsQueryType = z.infer<typeof GetPermissionsQuerySchema>;
