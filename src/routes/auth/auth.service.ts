@@ -89,7 +89,7 @@ export class AuthService {
       throw EmailAlreadyExistsException;
     }
 
-    if (!user && type !== TypeOfVerificationCode.FORGOT_PASSWORD) {
+    if (!user && type === TypeOfVerificationCode.FORGOT_PASSWORD) {
       throw EmailNotFoundException;
     }
 
