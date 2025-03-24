@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 
 import { RoleAlreadyExistsException } from 'src/routes/role/role.error';
 import { CreateRoleBodyType, GetRolesQueryType, UpdateRoleBodyType } from 'src/routes/role/role.model';
@@ -67,13 +67,16 @@ export class RoleService {
       if (isPrismaUniqueConstrantError(error)) {
         throw RoleAlreadyExistsException;
       }
+      if (error instanceof Error) {
+        throw new BadRequestException(error.message);
+      }
       throw error;
     }
   }
 
   async delete(payload: { id: number; deletedById: number }) {
     try {
-      await this.roleRepository.delete(payload, true);
+      await this.roleRepository.delete(payload);
 
       return {
         message: 'Delete role successfully',

@@ -55,7 +55,7 @@ export class PermissionService {
 
   async delete(payload: { id: number; deletedById: number }) {
     try {
-      await this.permissionRepository.delete(payload, true);
+      await this.permissionRepository.delete(payload);
 
       return {
         message: 'Delete permission successfully',

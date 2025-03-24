@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 
 import { AppModule } from 'src/app.module';
-import { HTTPMethod } from 'src/shared/constants/role.constant';
+import { HTTPMethod, RoleName } from 'src/shared/constants/role.constant';
 import { PrismaService } from 'src/shared/services/prisma.service';
 
 const prisma = new PrismaService();
@@ -78,6 +78,32 @@ async function bootstrap() {
   } else {
     console.log('No permissions to add');
   }
+
+  const permissionsInDbAfter = await prisma.permission.findMany({
+    where: {
+      deletedAt: null,
+    },
+  });
+
+  const adminRole = await prisma.role.findFirstOrThrow({
+    where: {
+      name: RoleName.Admin,
+      deletedAt: null,
+    },
+  });
+
+  await prisma.role.update({
+    where: {
+      id: adminRole.id,
+    },
+    data: {
+      permissions: {
+        set: permissionsInDbAfter.map((item) => ({
+          id: item.id,
+        })),
+      },
+    },
+  });
 
   process.exit(0);
 }
