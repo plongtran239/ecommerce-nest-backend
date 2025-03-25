@@ -1,4 +1,4 @@
-import { UnprocessableEntityException } from '@nestjs/common';
+import { ForbiddenException, UnprocessableEntityException } from '@nestjs/common';
 
 export const RoleAlreadyExistsException = new UnprocessableEntityException([
   {
@@ -6,3 +6,5 @@ export const RoleAlreadyExistsException = new UnprocessableEntityException([
     path: 'name',
   },
 ]);
+
+export const ProhibitedActionOnBaseRoleException = new ForbiddenException('Error.ProhibitedActionOnBaseRoleException');

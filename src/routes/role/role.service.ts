@@ -1,6 +1,6 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
-import { RoleAlreadyExistsException } from 'src/routes/role/role.error';
+import { ProhibitedActionOnBaseRoleException, RoleAlreadyExistsException } from 'src/routes/role/role.error';
 import { CreateRoleBodyType, GetRolesQueryType, UpdateRoleBodyType } from 'src/routes/role/role.model';
 import { RoleRepository } from 'src/routes/role/role.repository';
 import { RoleName } from 'src/shared/constants/role.constant';
@@ -59,6 +59,8 @@ export class RoleService {
 
   async update(payload: { id: number; data: UpdateRoleBodyType; updatedById: number }) {
     try {
+      await this.verifyRole(payload.id);
+
       return await this.roleRepository.update(payload);
     } catch (error) {
       if (isPrismaNotFoundError(error)) {
@@ -67,15 +69,14 @@ export class RoleService {
       if (isPrismaUniqueConstrantError(error)) {
         throw RoleAlreadyExistsException;
       }
-      if (error instanceof Error) {
-        throw new BadRequestException(error.message);
-      }
       throw error;
     }
   }
 
   async delete(payload: { id: number; deletedById: number }) {
     try {
+      await this.verifyRole(payload.id);
+
       await this.roleRepository.delete(payload);
 
       return {
@@ -86,6 +87,20 @@ export class RoleService {
         throw NotFoundRecordException;
       }
       throw error;
+    }
+  }
+
+  private async verifyRole(roleId: number) {
+    const role = await this.roleRepository.findById(roleId);
+
+    if (!role) {
+      throw NotFoundRecordException;
+    }
+
+    const baseRoles: string[] = [RoleName.Client, RoleName.Seller, RoleName.Admin];
+
+    if (baseRoles.includes(role.name)) {
+      throw ProhibitedActionOnBaseRoleException;
     }
   }
 }

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 
 import { GetPermissionsQueryType } from 'src/routes/permission/permission.model';
 import {
@@ -98,7 +98,7 @@ export class RoleRepository {
 
       if (deletedPermissions.length > 0) {
         const deletedIds = deletedPermissions.map((permission) => permission.id).join(', ');
-        throw new Error(`Permission(s) with id(s) ${deletedIds} is/are deleted`);
+        throw new BadRequestException(`Permission(s) with id(s) ${deletedIds} is/are deleted`);
       }
     }
 
