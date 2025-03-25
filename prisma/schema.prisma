@@ -181,6 +181,7 @@ model Permission {
   path        String     @db.VarChar(1000)
   method      HTTPMethod
   roles       Role[]
+  module      String     @default("") @db.VarChar(500)
 
   createdById Int?
   createdBy   User? @relation("PermissionCreatedBy", fields: [createdById], references: [id], onDelete: SetNull, onUpdate: NoAction)
