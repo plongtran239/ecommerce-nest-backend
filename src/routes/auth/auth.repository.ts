@@ -4,6 +4,7 @@ import { DeviceType, RefreshTokenType, VerificationCodeType } from 'src/routes/a
 import { TypeOfVerificationCodeType } from 'src/shared/constants/auth.constant';
 import { RoleType } from 'src/shared/models/shared-role.model';
 import { UserType } from 'src/shared/models/shared-user.model';
+import { WhereUniqueUserType } from 'src/shared/repositories/shared-user.repository';
 import { PrismaService } from 'src/shared/services/prisma.service';
 
 @Injectable()
@@ -62,11 +63,9 @@ export class AuthRepository {
   }
 
   // Find
-  async findUniqueUserIncludeRole(
-    uniqueObject: { id: number } | { email: string },
-  ): Promise<(UserType & { role: RoleType }) | null> {
+  async findUniqueUserIncludeRole(where: WhereUniqueUserType): Promise<(UserType & { role: RoleType }) | null> {
     return this.prismaService.user.findUnique({
-      where: uniqueObject,
+      where,
       include: {
         role: true,
       },
@@ -74,7 +73,7 @@ export class AuthRepository {
   }
 
   async findUniqueVerificationCode(
-    uniqueObject:
+    where:
       | { id: number }
       | {
           email_code_type: {
@@ -85,15 +84,15 @@ export class AuthRepository {
         },
   ): Promise<VerificationCodeType | null> {
     return this.prismaService.verificationCode.findUnique({
-      where: uniqueObject,
+      where,
     });
   }
 
-  async findUniqueRefreshTokenIncludeUserRole(uniqueObject: {
+  async findUniqueRefreshTokenIncludeUserRole(where: {
     token: string;
   }): Promise<(RefreshTokenType & { user: UserType & { role: RoleType } }) | null> {
     return this.prismaService.refreshToken.findUnique({
-      where: uniqueObject,
+      where,
       include: {
         user: {
           include: {
@@ -114,16 +113,6 @@ export class AuthRepository {
     });
   }
 
-  async updateUser(
-    uniqueObject: { id: number } | { email: string },
-    data: Partial<Omit<UserType, 'id'>>,
-  ): Promise<UserType> {
-    return this.prismaService.user.update({
-      where: uniqueObject,
-      data,
-    });
-  }
-
   // Delete
   async deleteRefreshToken(token: string) {
     return this.prismaService.refreshToken.delete({
@@ -134,7 +123,7 @@ export class AuthRepository {
   }
 
   async deleteVerificationCode(
-    uniqueObject:
+    where:
       | { id: number }
       | {
           email_code_type: {
@@ -145,7 +134,7 @@ export class AuthRepository {
         },
   ) {
     return this.prismaService.verificationCode.delete({
-      where: uniqueObject,
+      where,
     });
   }
 }

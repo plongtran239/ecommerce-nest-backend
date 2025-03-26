@@ -7,7 +7,6 @@ import {
   EmailNotFoundException,
   FailedToSendOTPException,
   InvalidOTPException,
-  InvalidPasswordException,
   InvalidTOTPAndCodeException,
   OTPExpiredException,
   RefreshTokenAlreadyUsedException,
@@ -27,6 +26,7 @@ import { AuthRepository } from 'src/routes/auth/auth.repository';
 import { RoleService } from 'src/routes/role/role.service';
 import envConfig from 'src/shared/config';
 import { TypeOfVerificationCode, TypeOfVerificationCodeType } from 'src/shared/constants/auth.constant';
+import { InvalidPasswordException } from 'src/shared/error';
 import { generateOTPCode, isPrismaNotFoundError, isPrismaUniqueConstrantError } from 'src/shared/helpers';
 import { SharedUserRepository } from 'src/shared/repositories/shared-user.repository';
 import { TwoFactorAuthService } from 'src/shared/services/2fa.service';
@@ -83,7 +83,7 @@ export class AuthService {
   }
 
   async sendOTP({ email, type }: SendOTPBodyType) {
-    const user = await this.sharedUserRepository.findUnique({ email });
+    const user = await this.sharedUserRepository.findUnique({ email, deletedAt: null });
 
     if (user && type === TypeOfVerificationCode.REGISTER) {
       throw EmailAlreadyExistsException;
@@ -117,7 +117,7 @@ export class AuthService {
   }
 
   async login({ email, password, userAgent, ip, code, totpCode }: LoginBodyType & { userAgent: string; ip: string }) {
-    const user = await this.authRepository.findUniqueUserIncludeRole({ email });
+    const user = await this.authRepository.findUniqueUserIncludeRole({ email, deletedAt: null });
 
     if (!user) {
       throw EmailNotFoundException;
@@ -235,7 +235,7 @@ export class AuthService {
   }
 
   async forgotPassword({ email, code, newPassword }: ForgotPasswordBodyType) {
-    const user = await this.sharedUserRepository.findUnique({ email });
+    const user = await this.sharedUserRepository.findUnique({ email, deletedAt: null });
 
     if (!user) {
       throw EmailNotFoundException;
@@ -246,11 +246,12 @@ export class AuthService {
     const hashedPassword = await this.hashingService.hash(newPassword);
 
     await Promise.all([
-      this.authRepository.updateUser(
-        { id: user.id },
+      this.sharedUserRepository.update(
+        { id: user.id, deletedAt: null },
         {
           password: hashedPassword,
           updatedAt: new Date(),
+          updatedById: user.id,
         },
       ),
       this.authRepository.deleteVerificationCode({
@@ -263,7 +264,7 @@ export class AuthService {
     ]);
 
     return {
-      message: 'Change password successfully',
+      message: 'Reset password successfully',
     };
   }
 
@@ -293,7 +294,7 @@ export class AuthService {
   }
 
   async setupTwoFactorAuth(userId: number) {
-    const user = await this.sharedUserRepository.findUnique({ id: userId });
+    const user = await this.sharedUserRepository.findUnique({ id: userId, deletedAt: null });
 
     if (!user) {
       throw EmailNotFoundException;
@@ -305,12 +306,14 @@ export class AuthService {
 
     const { secret, uri } = this.twoFactorAuthService.generateTOTPSecret(user.email);
 
-    await this.authRepository.updateUser(
+    await this.sharedUserRepository.update(
       {
         id: userId,
+        deletedAt: null,
       },
       {
         totpSecret: secret,
+        updatedById: userId,
       },
     );
 
@@ -323,7 +326,7 @@ export class AuthService {
   async disableTwoFactorAuth(data: DisableTwoFactorBodyType & { userId: number }) {
     const { code, totpCode, userId } = data;
 
-    const user = await this.sharedUserRepository.findUnique({ id: userId });
+    const user = await this.sharedUserRepository.findUnique({ id: userId, deletedAt: null });
 
     if (!user) {
       throw EmailNotFoundException;
@@ -347,12 +350,14 @@ export class AuthService {
       await this.validateVerificationCode({ email: user.email, code, type: TypeOfVerificationCode.DISABLE_2FA });
     }
 
-    await this.authRepository.updateUser(
+    await this.sharedUserRepository.update(
       {
         id: userId,
+        deletedAt: null,
       },
       {
         totpSecret: null,
+        updatedById: userId,
       },
     );
 

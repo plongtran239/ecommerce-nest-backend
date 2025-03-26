@@ -18,7 +18,7 @@ const RegisterBodySchema = UserSchema.pick({
     if (password !== confirmPassword) {
       ctx.addIssue({
         code: 'custom',
-        message: 'Password and confirm password must match',
+        message: 'Error.ConfirmPasswordNotMatch',
         path: ['confirmPassword'],
       });
     }
