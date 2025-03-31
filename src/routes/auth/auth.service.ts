@@ -23,11 +23,11 @@ import {
   SendOTPBodyType,
 } from 'src/routes/auth/auth.model';
 import { AuthRepository } from 'src/routes/auth/auth.repository';
-import { RoleService } from 'src/routes/role/role.service';
 import envConfig from 'src/shared/config';
 import { TypeOfVerificationCode, TypeOfVerificationCodeType } from 'src/shared/constants/auth.constant';
 import { InvalidPasswordException } from 'src/shared/error';
 import { generateOTPCode, isPrismaNotFoundError, isPrismaUniqueConstrantError } from 'src/shared/helpers';
+import { SharedRoleRepository } from 'src/shared/repositories/shared-role.repository';
 import { SharedUserRepository } from 'src/shared/repositories/shared-user.repository';
 import { TwoFactorAuthService } from 'src/shared/services/2fa.service';
 import { EmailService } from 'src/shared/services/email.service';
@@ -39,7 +39,7 @@ import { CreateAccessTokenPayload } from 'src/shared/types/jwt.type';
 export class AuthService {
   constructor(
     private readonly hashingService: HashingService,
-    private readonly roleService: RoleService,
+    private readonly sharedRoleRepository: SharedRoleRepository,
     private readonly authRepository: AuthRepository,
     private readonly emailService: EmailService,
     private readonly tokenService: TokenService,
@@ -51,7 +51,7 @@ export class AuthService {
     try {
       await this.validateVerificationCode({ email, code, type: TypeOfVerificationCode.REGISTER });
 
-      const clientRoleId = await this.roleService.getClientRoleId();
+      const clientRoleId = await this.sharedRoleRepository.getClientRoleId();
 
       const hashedPassword = await this.hashingService.hash(password);
 

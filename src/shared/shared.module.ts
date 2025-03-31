@@ -5,6 +5,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { AccessTokenGuard } from 'src/shared/guards/access-token.guard';
 import { APIKeyGuard } from 'src/shared/guards/api-key.guard';
 import { AuthenticationGuard } from 'src/shared/guards/authentication.guard';
+import { SharedRoleRepository } from 'src/shared/repositories/shared-role.repository';
 import { SharedUserRepository } from 'src/shared/repositories/shared-user.repository';
 import { TwoFactorAuthService } from 'src/shared/services/2fa.service';
 import { EmailService } from 'src/shared/services/email.service';
@@ -19,6 +20,7 @@ const sharedServices = [
   EmailService,
   TwoFactorAuthService,
   SharedUserRepository,
+  SharedRoleRepository,
 ];
 
 @Global()

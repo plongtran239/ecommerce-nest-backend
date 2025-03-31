@@ -7,8 +7,8 @@ import { GoogleUserInfoError } from 'src/routes/auth/auth.error';
 import { GoogleAuthStateType } from 'src/routes/auth/auth.model';
 import { AuthRepository } from 'src/routes/auth/auth.repository';
 import { AuthService } from 'src/routes/auth/auth.service';
-import { RoleService } from 'src/routes/role/role.service';
 import envConfig from 'src/shared/config';
+import { SharedRoleRepository } from 'src/shared/repositories/shared-role.repository';
 import { HashingService } from 'src/shared/services/hashing.service';
 
 @Injectable()
@@ -17,7 +17,7 @@ export class GoogleService {
 
   constructor(
     private readonly authRepository: AuthRepository,
-    private readonly roleService: RoleService,
+    private readonly sharedRoleRepository: SharedRoleRepository,
     private readonly hashingService: HashingService,
     private readonly authService: AuthService,
   ) {
@@ -75,7 +75,7 @@ export class GoogleService {
       let user = await this.authRepository.findUniqueUserIncludeRole({ email: data.email });
 
       if (!user) {
-        const clientRoleId = await this.roleService.getClientRoleId();
+        const clientRoleId = await this.sharedRoleRepository.getClientRoleId();
 
         const randomPassword = uuidv4();
 
