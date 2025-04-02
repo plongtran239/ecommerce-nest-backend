@@ -8,11 +8,9 @@ import { PrismaService } from 'src/shared/services/prisma.service';
 export type WhereUniqueUserType =
   | {
       id: number;
-      [key: string]: any;
     }
   | {
       email: string;
-      [key: string]: any;
     };
 
 type UserIncludeRolePermissionsType = UserType & {
@@ -26,14 +24,20 @@ export class SharedUserRepository {
   constructor(private readonly prismaService: PrismaService) {}
 
   async findUnique(where: WhereUniqueUserType): Promise<UserType | null> {
-    return this.prismaService.user.findUnique({
-      where,
+    return this.prismaService.user.findFirst({
+      where: {
+        ...where,
+        deletedAt: null,
+      },
     });
   }
 
   async findUniqueWithRolePermissions(where: WhereUniqueUserType): Promise<UserIncludeRolePermissionsType | null> {
-    return this.prismaService.user.findUnique({
-      where,
+    return this.prismaService.user.findFirst({
+      where: {
+        ...where,
+        deletedAt: null,
+      },
       include: {
         role: {
           include: {
@@ -48,9 +52,12 @@ export class SharedUserRepository {
     });
   }
 
-  async update(where: WhereUniqueUserType, data: Partial<UserType>): Promise<UserType> {
+  async update(where: { id: number }, data: Partial<UserType>): Promise<UserType> {
     return this.prismaService.user.update({
-      where,
+      where: {
+        ...where,
+        deletedAt: null,
+      },
       data,
     });
   }

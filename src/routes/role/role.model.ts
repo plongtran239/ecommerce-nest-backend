@@ -1,12 +1,7 @@
 import { z } from 'zod';
 
 import { PaginationSchema } from 'src/shared/models/pagination.model';
-import { PermissionSchema } from 'src/shared/models/shared-permission.model';
-import { RoleSchema } from 'src/shared/models/shared-role.model';
-
-export const RoleWithPermissionsSchema = RoleSchema.extend({
-  permissions: z.array(PermissionSchema),
-});
+import { RoleSchema, RoleWithPermissionsSchema } from 'src/shared/models/shared-role.model';
 
 export const CreateRoleBodySchema = RoleSchema.pick({
   name: true,
@@ -38,7 +33,6 @@ export const UpdateRoleBodySchema = CreateRoleBodySchema.extend({
 
 export const UpdateRoleResSchema = RoleWithPermissionsSchema;
 
-export type RoleWithPermissionsType = z.infer<typeof RoleWithPermissionsSchema>;
 export type CreateRoleBodyType = z.infer<typeof CreateRoleBodySchema>;
 export type CreateRoleResType = z.infer<typeof CreateRoleResSchema>;
 export type GetRolesQueryType = z.infer<typeof GetRolesQuerySchema>;

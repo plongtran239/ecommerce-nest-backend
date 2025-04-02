@@ -83,7 +83,7 @@ export class AuthService {
   }
 
   async sendOTP({ email, type }: SendOTPBodyType) {
-    const user = await this.sharedUserRepository.findUnique({ email, deletedAt: null });
+    const user = await this.sharedUserRepository.findUnique({ email });
 
     if (user && type === TypeOfVerificationCode.REGISTER) {
       throw EmailAlreadyExistsException;
@@ -117,7 +117,7 @@ export class AuthService {
   }
 
   async login({ email, password, userAgent, ip, code, totpCode }: LoginBodyType & { userAgent: string; ip: string }) {
-    const user = await this.authRepository.findUniqueUserIncludeRole({ email, deletedAt: null });
+    const user = await this.authRepository.findUniqueUserIncludeRole({ email });
 
     if (!user) {
       throw EmailNotFoundException;
@@ -235,7 +235,7 @@ export class AuthService {
   }
 
   async forgotPassword({ email, code, newPassword }: ForgotPasswordBodyType) {
-    const user = await this.sharedUserRepository.findUnique({ email, deletedAt: null });
+    const user = await this.sharedUserRepository.findUnique({ email });
 
     if (!user) {
       throw EmailNotFoundException;
@@ -247,7 +247,7 @@ export class AuthService {
 
     await Promise.all([
       this.sharedUserRepository.update(
-        { id: user.id, deletedAt: null },
+        { id: user.id },
         {
           password: hashedPassword,
           updatedAt: new Date(),
@@ -294,7 +294,7 @@ export class AuthService {
   }
 
   async setupTwoFactorAuth(userId: number) {
-    const user = await this.sharedUserRepository.findUnique({ id: userId, deletedAt: null });
+    const user = await this.sharedUserRepository.findUnique({ id: userId });
 
     if (!user) {
       throw EmailNotFoundException;
@@ -309,7 +309,6 @@ export class AuthService {
     await this.sharedUserRepository.update(
       {
         id: userId,
-        deletedAt: null,
       },
       {
         totpSecret: secret,
@@ -326,7 +325,7 @@ export class AuthService {
   async disableTwoFactorAuth(data: DisableTwoFactorBodyType & { userId: number }) {
     const { code, totpCode, userId } = data;
 
-    const user = await this.sharedUserRepository.findUnique({ id: userId, deletedAt: null });
+    const user = await this.sharedUserRepository.findUnique({ id: userId });
 
     if (!user) {
       throw EmailNotFoundException;
@@ -353,7 +352,6 @@ export class AuthService {
     await this.sharedUserRepository.update(
       {
         id: userId,
-        deletedAt: null,
       },
       {
         totpSecret: null,

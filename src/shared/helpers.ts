@@ -6,6 +6,10 @@ export const isPrismaUniqueConstrantError = (error: any): error is PrismaClientK
   return isPrismaKnownRequestError(error) && error.code === 'P2002';
 };
 
+export const isPrismaForeignKeyConstraintError = (error: any): error is PrismaClientKnownRequestError => {
+  return isPrismaKnownRequestError(error) && error.code === 'P2003';
+};
+
 export const isPrismaNotFoundError = (error: any): error is PrismaClientKnownRequestError => {
   return isPrismaKnownRequestError(error) && error.code === 'P2025';
 };
