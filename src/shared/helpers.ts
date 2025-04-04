@@ -1,4 +1,6 @@
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import path from 'path';
+import { v4 as uuidv4 } from 'uuid';
 
 import { randomInt } from 'crypto';
 
@@ -20,4 +22,9 @@ const isPrismaKnownRequestError = (error: any): error is PrismaClientKnownReques
 
 export const generateOTPCode = () => {
   return randomInt(100000, 1000000).toString();
+};
+
+export const generateRandomFileName = (fileName: string) => {
+  const extension = path.extname(fileName);
+  return `${uuidv4()}${extension}`;
 };
