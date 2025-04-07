@@ -14,6 +14,7 @@ if (!fs.existsSync(path.resolve('.env'))) {
 
 const configSchema = z.object({
   APP_NAME: z.string().nonempty(),
+  PREFIX_STATIC_ENDPOINT: z.string().nonempty(),
 
   DATABASE_URL: z.string().nonempty(),
 
