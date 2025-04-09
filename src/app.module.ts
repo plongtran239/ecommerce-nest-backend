@@ -3,6 +3,8 @@ import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ZodSerializerInterceptor } from 'nestjs-zod';
 
 import { AuthModule } from 'src/routes/auth/auth.module';
+import { BrandTranslationModule } from 'src/routes/brand/brand-translation/brand-translation.module';
+import { BrandModule } from 'src/routes/brand/brand.module';
 import { LanguageModule } from 'src/routes/language/language.module';
 import { MediaModule } from 'src/routes/media/media.module';
 import { PermissionModule } from 'src/routes/permission/permission.module';
@@ -23,6 +25,8 @@ import { SharedModule } from 'src/shared/shared.module';
     ProfileModule,
     UserModule,
     MediaModule,
+    BrandModule,
+    BrandTranslationModule,
   ],
   providers: [
     {

@@ -26,7 +26,7 @@ export const GetLanguageParamsSchema = z
 
 export const GetLanguagesResSchema = z.object({
   data: z.array(LanguageSchema),
-  totalItems: z.number(),
+  totalItems: z.number().int(),
 });
 
 export const GetDetailLanguageResSchema = LanguageSchema;

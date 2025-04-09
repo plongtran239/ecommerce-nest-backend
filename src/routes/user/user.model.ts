@@ -45,7 +45,7 @@ export const GetUserParamsSchema = z
 
 export const GetUsersResSchema = PaginationSchema.extend({
   data: z.array(UserResSchema),
-  totalItems: z.number().int().positive(),
+  totalItems: z.number().int(),
 });
 
 export const GetDetailUserResSchema = UserResSchema;

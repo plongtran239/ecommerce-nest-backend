@@ -18,7 +18,7 @@ export const GetRolesQuerySchema = PaginationSchema.pick({
 
 export const GetRolesResSchema = PaginationSchema.extend({
   data: z.array(RoleSchema),
-  totalItems: z.number().int().positive(),
+  totalItems: z.number().int(),
 });
 
 export const GetRoleParamsSchema = z.object({

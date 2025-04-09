@@ -20,7 +20,7 @@ export const GetPermissionsQuerySchema = PaginationSchema.pick({
 
 export const GetPermissionsResSchema = PaginationSchema.extend({
   data: z.array(PermissionSchema),
-  totalItems: z.number().int().positive(),
+  totalItems: z.number().int(),
 });
 
 export const GetPermisstionParamsSchema = z
