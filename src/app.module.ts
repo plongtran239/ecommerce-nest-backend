@@ -7,6 +7,8 @@ import path from 'path';
 import { AuthModule } from 'src/routes/auth/auth.module';
 import { BrandTranslationModule } from 'src/routes/brand/brand-translation/brand-translation.module';
 import { BrandModule } from 'src/routes/brand/brand.module';
+import { CategoryTranslationModule } from 'src/routes/category/category-translation/category-translation.module';
+import { CategoryModule } from 'src/routes/category/category.module';
 import { LanguageModule } from 'src/routes/language/language.module';
 import { MediaModule } from 'src/routes/media/media.module';
 import { PermissionModule } from 'src/routes/permission/permission.module';
@@ -38,6 +40,8 @@ import { SharedModule } from 'src/shared/shared.module';
     MediaModule,
     BrandModule,
     BrandTranslationModule,
+    CategoryModule,
+    CategoryTranslationModule,
   ],
   providers: [
     {
