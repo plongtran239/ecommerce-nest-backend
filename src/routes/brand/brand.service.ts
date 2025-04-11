@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { I18nContext } from 'nestjs-i18n';
 
 import { CreateBrandBodyType, UpdateBrandBodyType } from 'src/routes/brand/brand.model';
 import { BrandRepository } from 'src/routes/brand/brand.repository';
@@ -11,12 +12,12 @@ export class BrandService {
   constructor(private brandRepository: BrandRepository) {}
 
   async list(pagination: PaginationQueryType) {
-    const data = await this.brandRepository.list(pagination);
+    const data = await this.brandRepository.list(pagination, I18nContext.current()?.lang as string);
     return data;
   }
 
   async findById(id: number) {
-    const brand = await this.brandRepository.findById(id);
+    const brand = await this.brandRepository.findById(id, I18nContext.current()?.lang as string);
     if (!brand) {
       throw NotFoundRecordException;
     }

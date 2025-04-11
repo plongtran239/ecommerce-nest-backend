@@ -6,3 +6,10 @@ export const BrandTranslationAlreadyExistsException = new UnprocessableEntityExc
     message: 'Error.BrandTranslationAlreadyExists',
   },
 ]);
+
+export const LanguageNotFoundException = new UnprocessableEntityException([
+  {
+    path: 'languageId',
+    message: 'Error.LanguageNotFound',
+  },
+]);

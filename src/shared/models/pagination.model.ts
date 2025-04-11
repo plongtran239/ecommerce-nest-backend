@@ -9,7 +9,7 @@ export const PaginationSchema = z.object({
 export const PaginationQuerySchema = PaginationSchema.pick({
   page: true,
   limit: true,
-}).strict();
+});
 
 export type PaginationType = z.infer<typeof PaginationSchema>;
 export type PaginationQueryType = z.infer<typeof PaginationQuerySchema>;

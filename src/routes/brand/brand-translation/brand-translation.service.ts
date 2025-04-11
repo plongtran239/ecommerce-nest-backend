@@ -1,13 +1,20 @@
 import { Injectable } from '@nestjs/common';
 
-import { BrandTranslationAlreadyExistsException } from 'src/routes/brand/brand-translation/brand-translation.error';
+import {
+  BrandTranslationAlreadyExistsException,
+  LanguageNotFoundException,
+} from 'src/routes/brand/brand-translation/brand-translation.error';
 import {
   CreateBrandTranslationBodyType,
   UpdateBrandTranslationBodyType,
 } from 'src/routes/brand/brand-translation/brand-translation.model';
 import { BrandTranslationRepository } from 'src/routes/brand/brand-translation/brand-translation.repository';
 import { NotFoundRecordException } from 'src/shared/error';
-import { isPrismaNotFoundError, isPrismaUniqueConstrantError } from 'src/shared/helpers';
+import {
+  isPrismaForeignKeyConstraintError,
+  isPrismaNotFoundError,
+  isPrismaUniqueConstrantError,
+} from 'src/shared/helpers';
 
 @Injectable()
 export class BrandTranslationService {
@@ -31,6 +38,9 @@ export class BrandTranslationService {
       if (isPrismaUniqueConstrantError(error)) {
         throw BrandTranslationAlreadyExistsException;
       }
+      if (isPrismaForeignKeyConstraintError(error)) {
+        throw LanguageNotFoundException;
+      }
       throw error;
     }
   }
@@ -49,6 +59,9 @@ export class BrandTranslationService {
       }
       if (isPrismaNotFoundError(error)) {
         throw NotFoundRecordException;
+      }
+      if (isPrismaForeignKeyConstraintError(error)) {
+        throw LanguageNotFoundException;
       }
       throw error;
     }
