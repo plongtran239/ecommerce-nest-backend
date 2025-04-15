@@ -8,7 +8,7 @@ import {
 } from 'src/routes/permission/permission.model';
 import { PermissionRepository } from 'src/routes/permission/permission.repository';
 import { NotFoundRecordException } from 'src/shared/error';
-import { isPrismaNotFoundError, isPrismaUniqueConstrantError } from 'src/shared/helpers';
+import { isPrismaNotFoundError, isPrismaUniqueConstraintError } from 'src/shared/helpers';
 
 @Injectable()
 export class PermissionService {
@@ -18,7 +18,7 @@ export class PermissionService {
     try {
       return await this.permissionRepository.create(payload);
     } catch (error) {
-      if (isPrismaUniqueConstrantError(error)) {
+      if (isPrismaUniqueConstraintError(error)) {
         throw PermissionAlreadyExistsException;
       }
       throw error;
@@ -46,7 +46,7 @@ export class PermissionService {
       if (isPrismaNotFoundError(error)) {
         throw NotFoundRecordException;
       }
-      if (isPrismaUniqueConstrantError(error)) {
+      if (isPrismaUniqueConstraintError(error)) {
         throw PermissionAlreadyExistsException;
       }
       throw error;

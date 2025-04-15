@@ -26,7 +26,7 @@ import { AuthRepository } from 'src/routes/auth/auth.repository';
 import envConfig from 'src/shared/config';
 import { TypeOfVerificationCode, TypeOfVerificationCodeType } from 'src/shared/constants/auth.constant';
 import { InvalidPasswordException } from 'src/shared/error';
-import { generateOTPCode, isPrismaNotFoundError, isPrismaUniqueConstrantError } from 'src/shared/helpers';
+import { generateOTPCode, isPrismaNotFoundError, isPrismaUniqueConstraintError } from 'src/shared/helpers';
 import { SharedRoleRepository } from 'src/shared/repositories/shared-role.repository';
 import { SharedUserRepository } from 'src/shared/repositories/shared-user.repository';
 import { TwoFactorAuthService } from 'src/shared/services/2fa.service';
@@ -75,7 +75,7 @@ export class AuthService {
 
       return user;
     } catch (error) {
-      if (isPrismaUniqueConstrantError(error)) {
+      if (isPrismaUniqueConstraintError(error)) {
         throw EmailAlreadyExistsException;
       }
       throw error;

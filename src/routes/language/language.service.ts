@@ -4,7 +4,7 @@ import { LanguageAlreadyExistsException } from 'src/routes/language/language.err
 import { CreateLanguageBodyType, UpdateLanguageBodyType } from 'src/routes/language/language.model';
 import { LanguageRepository } from 'src/routes/language/language.repository';
 import { NotFoundRecordException } from 'src/shared/error';
-import { isPrismaNotFoundError, isPrismaUniqueConstrantError } from 'src/shared/helpers';
+import { isPrismaNotFoundError, isPrismaUniqueConstraintError } from 'src/shared/helpers';
 
 @Injectable()
 export class LanguageService {
@@ -14,7 +14,7 @@ export class LanguageService {
     try {
       return await this.languageRepository.create(payload);
     } catch (error) {
-      if (isPrismaUniqueConstrantError(error)) {
+      if (isPrismaUniqueConstraintError(error)) {
         throw LanguageAlreadyExistsException;
       }
       throw error;
@@ -47,7 +47,7 @@ export class LanguageService {
       if (isPrismaNotFoundError(error)) {
         throw NotFoundRecordException;
       }
-      if (isPrismaUniqueConstrantError(error)) {
+      if (isPrismaUniqueConstraintError(error)) {
         throw LanguageAlreadyExistsException;
       }
       throw error;

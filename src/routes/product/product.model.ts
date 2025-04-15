@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import { ProductTranslationSchema } from 'src/routes/product/product-translation/product-translation.model';
 import { SKUSchema, UpsertSKUBodySchema } from 'src/routes/product/sku.model';
-import { PaginationSchema } from 'src/shared/models/pagination.model';
+import { PaginationQuerySchema, PaginationSchema } from 'src/shared/models/pagination.model';
 import { BrandIncludeTranslationSchema } from 'src/shared/models/shared-brand.model';
 import { CategoryIncludeTranslationSchema } from 'src/shared/models/shared-category.model';
 
@@ -36,16 +36,19 @@ export const VariantsSchema = z.array(VariantSchema).superRefine((variants, ctx)
   // Kiểm tra variants và variant option có bị trùng hay không
   for (let i = 0; i < variants.length; i++) {
     const variant = variants[i];
-    const isDifferent = variants.findIndex((v) => v.value === variant.value) !== i;
-    if (!isDifferent) {
+    const isExist = variants.findIndex((v) => v.value.toLowerCase() === variant.value.toLowerCase()) !== i;
+    if (isExist) {
       return ctx.addIssue({
         code: 'custom',
         message: `Giá trị ${variant.value} đã tồn tại trong danh sách variants. Vui lòng kiểm tra lại.`,
         path: ['variants'],
       });
     }
-    const isDifferentOption = variant.options.findIndex((o) => variant.options.includes(o)) !== -1;
-    if (isDifferentOption) {
+    const isExistOption = variant.options.some((option, index) => {
+      const isExistOption = variant.options.findIndex((o) => o.toLowerCase() === option.toLowerCase()) !== index;
+      return isExistOption;
+    });
+    if (isExistOption) {
       return ctx.addIssue({
         code: 'custom',
         message: `Variant ${variant.value} chứa các option trùng tên với nhau. Vui lòng kiểm tra lại.`,
@@ -58,7 +61,7 @@ export const VariantsSchema = z.array(VariantSchema).superRefine((variants, ctx)
 export const ProductSchema = z.object({
   id: z.number(),
   publishedAt: z.coerce.date().nullable(),
-  name: z.string().max(500),
+  name: z.string().trim().max(500),
   basePrice: z.number().positive(),
   virtualPrice: z.number().positive(),
   brandId: z.number().positive(),
@@ -73,9 +76,7 @@ export const ProductSchema = z.object({
   updatedAt: z.date(),
 });
 
-export const GetProductsQuerySchema = z.object({
-  page: z.coerce.number().int().positive().default(1),
-  limit: z.coerce.number().int().positive().default(10),
+export const GetProductsQuerySchema = PaginationQuerySchema.extend({
   name: z.string().optional(),
   brandIds: z.array(z.coerce.number().int().positive()).optional(),
   categories: z.array(z.coerce.number().int().positive()).optional(),

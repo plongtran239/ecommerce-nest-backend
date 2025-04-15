@@ -13,7 +13,7 @@ import { NotFoundRecordException } from 'src/shared/error';
 import {
   isPrismaForeignKeyConstraintError,
   isPrismaNotFoundError,
-  isPrismaUniqueConstrantError,
+  isPrismaUniqueConstraintError,
 } from 'src/shared/helpers';
 
 @Injectable()
@@ -35,7 +35,7 @@ export class CategoryTranslationService {
         data,
       });
     } catch (error) {
-      if (isPrismaUniqueConstrantError(error)) {
+      if (isPrismaUniqueConstraintError(error)) {
         throw CategoryTranslationAlreadyExistsException;
       }
       if (isPrismaForeignKeyConstraintError(error)) {
@@ -62,7 +62,7 @@ export class CategoryTranslationService {
       });
       return category;
     } catch (error) {
-      if (isPrismaUniqueConstrantError(error)) {
+      if (isPrismaUniqueConstraintError(error)) {
         throw CategoryTranslationAlreadyExistsException;
       }
       if (isPrismaNotFoundError(error)) {

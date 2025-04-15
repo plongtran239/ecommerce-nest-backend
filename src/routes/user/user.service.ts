@@ -12,7 +12,7 @@ import { CreateUserBodyType, GetUsersQueryType } from 'src/routes/user/user.mode
 import { UserRepository } from 'src/routes/user/user.repository';
 import { RoleName } from 'src/shared/constants/role.constant';
 import { NotFoundRecordException } from 'src/shared/error';
-import { isPrismaForeignKeyConstraintError, isPrismaUniqueConstrantError } from 'src/shared/helpers';
+import { isPrismaForeignKeyConstraintError, isPrismaUniqueConstraintError } from 'src/shared/helpers';
 import { SharedRoleRepository } from 'src/shared/repositories/shared-role.repository';
 import { SharedUserRepository } from 'src/shared/repositories/shared-user.repository';
 import { HashingService } from 'src/shared/services/hashing.service';
@@ -75,7 +75,7 @@ export class UserService {
         throw RoleNotFoundException;
       }
 
-      if (isPrismaUniqueConstrantError(error)) {
+      if (isPrismaUniqueConstraintError(error)) {
         throw UserAlreadyExistsException;
       }
 
@@ -128,7 +128,7 @@ export class UserService {
         throw RoleNotFoundException;
       }
 
-      if (isPrismaUniqueConstrantError(error)) {
+      if (isPrismaUniqueConstraintError(error)) {
         throw UserAlreadyExistsException;
       }
 

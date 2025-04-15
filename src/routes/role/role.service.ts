@@ -5,7 +5,7 @@ import { CreateRoleBodyType, GetRolesQueryType, UpdateRoleBodyType } from 'src/r
 import { RoleRepository } from 'src/routes/role/role.repository';
 import { RoleName } from 'src/shared/constants/role.constant';
 import { NotFoundRecordException } from 'src/shared/error';
-import { isPrismaNotFoundError, isPrismaUniqueConstrantError } from 'src/shared/helpers';
+import { isPrismaNotFoundError, isPrismaUniqueConstraintError } from 'src/shared/helpers';
 
 @Injectable()
 export class RoleService {
@@ -15,7 +15,7 @@ export class RoleService {
     try {
       return this.roleRepository.create(payload);
     } catch (error) {
-      if (isPrismaUniqueConstrantError(error)) {
+      if (isPrismaUniqueConstraintError(error)) {
         throw RoleAlreadyExistsException;
       }
       throw error;
@@ -45,7 +45,7 @@ export class RoleService {
       if (isPrismaNotFoundError(error)) {
         throw NotFoundRecordException;
       }
-      if (isPrismaUniqueConstrantError(error)) {
+      if (isPrismaUniqueConstraintError(error)) {
         throw RoleAlreadyExistsException;
       }
       throw error;
