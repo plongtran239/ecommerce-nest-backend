@@ -1,11 +1,11 @@
 import { createZodDto } from 'nestjs-zod';
 
 import {
-  CategoryTranslationSchema,
   CreateCategoryTranslationBodySchema,
   GetCategoryTranslationParamsSchema,
   UpdateCategoryTranslationBodySchema,
 } from 'src/routes/category/category-translation/category-translation.model';
+import { CategoryTranslationSchema } from 'src/shared/models/shared-category-translation.model';
 
 export class GetCategoryTranslationDetailResDTO extends createZodDto(CategoryTranslationSchema) {}
 

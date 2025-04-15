@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 
 import {
-  CategoryTranslationType,
   CreateCategoryTranslationBodyType,
   UpdateCategoryTranslationBodyType,
 } from 'src/routes/category/category-translation/category-translation.model';
+import { CategoryTranslationType } from 'src/shared/models/shared-category-translation.model';
 import { PrismaService } from 'src/shared/services/prisma.service';
 
 @Injectable()

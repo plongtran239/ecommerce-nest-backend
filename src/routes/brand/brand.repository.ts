@@ -1,14 +1,9 @@
 import { Injectable } from '@nestjs/common';
 
-import {
-  BrandIncludeTranslationType,
-  BrandType,
-  CreateBrandBodyType,
-  GetBrandsResType,
-  UpdateBrandBodyType,
-} from 'src/routes/brand/brand.model';
+import { CreateBrandBodyType, GetBrandsResType, UpdateBrandBodyType } from 'src/routes/brand/brand.model';
 import { ALL_LANGUAGE_CODE } from 'src/shared/constants/other.constant';
 import { PaginationQueryType } from 'src/shared/models/pagination.model';
+import { BrandIncludeTranslationType, BrandType } from 'src/shared/models/shared-brand.model';
 import { PrismaService } from 'src/shared/services/prisma.service';
 
 @Injectable()

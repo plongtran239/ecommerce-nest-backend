@@ -1,11 +1,11 @@
 import { createZodDto } from 'nestjs-zod';
 
 import {
-  BrandTranslationSchema,
   CreateBrandTranslationBodySchema,
   GetBrandTranslationParamsSchema,
   UpdateBrandTranslationBodySchema,
 } from 'src/routes/brand/brand-translation/brand-translation.model';
+import { BrandTranslationSchema } from 'src/shared/models/shared-brand-translation.model';
 
 export class GetBrandTranslationDetailResDTO extends createZodDto(BrandTranslationSchema) {}
 
