@@ -82,6 +82,17 @@ export const GetProductsQuerySchema = PaginationQuerySchema.extend({
   categories: z.array(z.coerce.number().int().positive()).optional(),
   minPrice: z.coerce.number().positive().optional(),
   maxPrice: z.coerce.number().positive().optional(),
+  createdById: z.coerce.number().int().positive().optional(),
+});
+
+export const GetManageProductsQuerySchema = GetProductsQuerySchema.extend({
+  createdById: z.coerce.number().int().positive(),
+  isPublic: z.preprocess((val) => {
+    if (val === 'true') return true;
+    if (val === 'false') return false;
+    if (val === undefined) return undefined;
+    return val;
+  }, z.boolean().optional()),
 });
 
 export const GetProductsResSchema = PaginationSchema.extend({
@@ -155,6 +166,7 @@ export type ProductType = z.infer<typeof ProductSchema>;
 export type VariantsType = z.infer<typeof VariantsSchema>;
 export type GetProductsResType = z.infer<typeof GetProductsResSchema>;
 export type GetProductsQueryType = z.infer<typeof GetProductsQuerySchema>;
+export type GetManageProductsQueryType = z.infer<typeof GetManageProductsQuerySchema>;
 export type GetProductDetailResType = z.infer<typeof GetProductDetailResSchema>;
 export type CreateProductBodyType = z.infer<typeof CreateProductBodySchema>;
 export type GetProductParamsType = z.infer<typeof GetProductParamsSchema>;

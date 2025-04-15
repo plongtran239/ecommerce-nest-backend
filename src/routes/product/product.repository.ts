@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 
 import {
   CreateProductBodyType,
   GetProductDetailResType,
-  GetProductsQueryType,
   GetProductsResType,
   ProductType,
   UpdateProductBodyType,
@@ -15,22 +15,55 @@ import { PrismaService } from 'src/shared/services/prisma.service';
 export class ProductRepository {
   constructor(private prisma: PrismaService) {}
 
-  async list(query: GetProductsQueryType, languageId: string): Promise<GetProductsResType> {
-    const { page, limit } = query;
-
+  async list({
+    limit,
+    page,
+    createdById,
+    isPublic,
+    languageId,
+  }: {
+    limit: number;
+    page: number;
+    name?: string;
+    brandIds?: number[];
+    categories?: number[];
+    minPrice?: number;
+    maxPrice?: number;
+    createdById?: number;
+    isPublic?: boolean;
+    languageId: string;
+  }): Promise<GetProductsResType> {
     const skip = (page - 1) * limit;
     const take = limit;
+    let where: Prisma.ProductWhereInput = {
+      deletedAt: null,
+      createdById,
+    };
+
+    console.log({ isPublic });
+
+    if (isPublic === true) {
+      where.publishedAt = { lte: new Date(), not: null };
+    } else if (isPublic === false) {
+      where = {
+        ...where,
+        OR: [
+          {
+            publishedAt: null,
+          },
+          {
+            publishedAt: { gt: new Date() },
+          },
+        ],
+      };
+    }
 
     const [totalItems, data] = await Promise.all([
       this.prisma.product.count({
-        where: {
-          deletedAt: null,
-        },
+        where,
       }),
       this.prisma.product.findMany({
-        where: {
-          deletedAt: null,
-        },
+        where,
         include: {
           productTranslations: {
             where:
@@ -61,12 +94,38 @@ export class ProductRepository {
     };
   }
 
-  async findById(id: number, languageId: string): Promise<GetProductDetailResType | null> {
+  async findDetail({
+    id,
+    languageId,
+    isPublic,
+  }: {
+    id: number;
+    languageId: string;
+    isPublic?: boolean;
+  }): Promise<GetProductDetailResType | null> {
+    let where: Prisma.ProductWhereUniqueInput = {
+      id,
+      deletedAt: null,
+    };
+
+    if (isPublic) {
+      where.publishedAt = { lte: new Date(), not: null };
+    } else {
+      where = {
+        ...where,
+        OR: [
+          {
+            publishedAt: null,
+          },
+          {
+            publishedAt: { gt: new Date() },
+          },
+        ],
+      };
+    }
+
     return await this.prisma.product.findUnique({
-      where: {
-        id,
-        deletedAt: null,
-      },
+      where,
       include: {
         productTranslations: {
           where: languageId === ALL_LANGUAGE_CODE ? { deletedAt: null } : { deletedAt: null, languageId },
@@ -90,6 +149,15 @@ export class ProductRepository {
             },
           },
         },
+      },
+    });
+  }
+
+  async findById(id: number): Promise<ProductType | null> {
+    return await this.prisma.product.findUnique({
+      where: {
+        id,
+        deletedAt: null,
       },
     });
   }
@@ -247,20 +315,12 @@ export class ProductRepository {
     const now = new Date();
 
     if (isHard) {
-      const [product] = await Promise.all([
-        this.prisma.product.delete({
-          where: {
-            id,
-            deletedAt: null,
-          },
-        }),
-        this.prisma.sKU.deleteMany({
-          where: {
-            productId: id,
-            deletedAt: null,
-          },
-        }),
-      ]);
+      const product = await this.prisma.product.delete({
+        where: {
+          id,
+          deletedAt: null,
+        },
+      });
 
       return product;
     } else {
@@ -276,6 +336,16 @@ export class ProductRepository {
           },
         }),
         this.prisma.sKU.updateMany({
+          where: {
+            productId: id,
+            deletedAt: null,
+          },
+          data: {
+            deletedAt: now,
+            deletedById,
+          },
+        }),
+        this.prisma.productTranslation.updateMany({
           where: {
             productId: id,
             deletedAt: null,
