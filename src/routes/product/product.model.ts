@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import { ProductTranslationSchema } from 'src/routes/product/product-translation/product-translation.model';
 import { SKUSchema, UpsertSKUBodySchema } from 'src/routes/product/sku.model';
+import { ORDER_BY, SORT_BY } from 'src/shared/constants/other.constant';
 import { PaginationQuerySchema, PaginationSchema } from 'src/shared/models/pagination.model';
 import { BrandIncludeTranslationSchema } from 'src/shared/models/shared-brand.model';
 import { CategoryIncludeTranslationSchema } from 'src/shared/models/shared-category.model';
@@ -78,11 +79,27 @@ export const ProductSchema = z.object({
 
 export const GetProductsQuerySchema = PaginationQuerySchema.extend({
   name: z.string().optional(),
-  brandIds: z.array(z.coerce.number().int().positive()).optional(),
-  categories: z.array(z.coerce.number().int().positive()).optional(),
+  brandIds: z
+    .preprocess((val) => {
+      if (typeof val === 'string') {
+        return [Number(val)];
+      }
+      return val;
+    }, z.array(z.coerce.number().int().positive()))
+    .optional(),
+  categoryIds: z
+    .preprocess((value) => {
+      if (typeof value === 'string') {
+        return [Number(value)];
+      }
+      return value;
+    }, z.array(z.coerce.number().int().positive()))
+    .optional(),
   minPrice: z.coerce.number().positive().optional(),
   maxPrice: z.coerce.number().positive().optional(),
   createdById: z.coerce.number().int().positive().optional(),
+  orderBy: z.enum([ORDER_BY.ASC, ORDER_BY.DESC]).default(ORDER_BY.DESC),
+  sortBy: z.enum([SORT_BY.PRICE, SORT_BY.CREATED_AT, SORT_BY.SALE]).default(SORT_BY.CREATED_AT),
 });
 
 export const GetManageProductsQuerySchema = GetProductsQuerySchema.extend({

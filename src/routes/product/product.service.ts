@@ -9,10 +9,9 @@ import { NotFoundRecordException } from 'src/shared/error';
 export class ProductService {
   constructor(private readonly productRepository: ProductRepository) {}
 
-  async list({ page, limit }: GetProductsQueryType) {
+  async list(query: GetProductsQueryType) {
     return await this.productRepository.list({
-      page,
-      limit,
+      ...query,
       languageId: I18nContext.current()?.lang as string,
       isPublic: true,
     });

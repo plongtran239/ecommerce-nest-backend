@@ -8,7 +8,7 @@ import {
   ProductType,
   UpdateProductBodyType,
 } from 'src/routes/product/product.model';
-import { ALL_LANGUAGE_CODE } from 'src/shared/constants/other.constant';
+import { ALL_LANGUAGE_CODE, OrderByType, SORT_BY, SortByType } from 'src/shared/constants/other.constant';
 import { PrismaService } from 'src/shared/services/prisma.service';
 
 @Injectable()
@@ -21,17 +21,26 @@ export class ProductRepository {
     createdById,
     isPublic,
     languageId,
+    name,
+    brandIds,
+    categoryIds,
+    minPrice,
+    maxPrice,
+    orderBy,
+    sortBy,
   }: {
     limit: number;
     page: number;
     name?: string;
     brandIds?: number[];
-    categories?: number[];
+    categoryIds?: number[];
     minPrice?: number;
     maxPrice?: number;
     createdById?: number;
     isPublic?: boolean;
     languageId: string;
+    orderBy: OrderByType;
+    sortBy: SortByType;
   }): Promise<GetProductsResType> {
     const skip = (page - 1) * limit;
     const take = limit;
@@ -39,8 +48,6 @@ export class ProductRepository {
       deletedAt: null,
       createdById,
     };
-
-    console.log({ isPublic });
 
     if (isPublic === true) {
       where.publishedAt = { lte: new Date(), not: null };
@@ -55,6 +62,54 @@ export class ProductRepository {
             publishedAt: { gt: new Date() },
           },
         ],
+      };
+    }
+
+    if (name) {
+      where.name = {
+        contains: name,
+        mode: 'insensitive',
+      };
+    }
+
+    if (brandIds && brandIds.length > 0) {
+      where.brandId = {
+        in: brandIds,
+      };
+    }
+
+    if (categoryIds && categoryIds.length > 0) {
+      where.categories = {
+        some: {
+          id: {
+            in: categoryIds,
+          },
+        },
+      };
+    }
+
+    if (minPrice !== undefined || maxPrice !== undefined) {
+      where.basePrice = {
+        gte: minPrice,
+        lte: maxPrice,
+      };
+    }
+
+    let orderByClause: Prisma.ProductOrderByWithRelationInput | Prisma.ProductOrderByWithRelationInput[] = {
+      createdAt: orderBy,
+    };
+
+    if (sortBy === SORT_BY.PRICE) {
+      orderByClause = {
+        basePrice: orderBy,
+      };
+    }
+
+    if (sortBy === SORT_BY.SALE) {
+      orderByClause = {
+        orders: {
+          _count: orderBy,
+        },
       };
     }
 
@@ -77,9 +132,7 @@ export class ProductRepository {
                   },
           },
         },
-        orderBy: {
-          createdAt: 'desc',
-        },
+        orderBy: orderByClause,
         skip,
         take,
       }),

@@ -46,11 +46,8 @@ export class ManageProductService {
     });
 
     const data = await this.productRepository.list({
-      page: query.page,
-      limit: query.limit,
+      ...query,
       languageId: I18nContext.current()?.lang as string,
-      createdById: query.createdById,
-      isPublic: query.isPublic,
     });
     return data;
   }
