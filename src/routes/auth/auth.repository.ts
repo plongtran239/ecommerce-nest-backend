@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 import { DeviceType, RefreshTokenType, VerificationCodeType } from 'src/routes/auth/auth.model';
-import { TypeOfVerificationCodeType } from 'src/shared/constants/auth.constant';
+import { TypeOfVerificationCodeType, UserStatus } from 'src/shared/constants/auth.constant';
 import { RoleType } from 'src/shared/models/shared-role.model';
 import { UserType } from 'src/shared/models/shared-user.model';
 import { WhereUniqueUserType } from 'src/shared/repositories/shared-user.repository';
@@ -16,7 +16,10 @@ export class AuthRepository {
     user: Pick<UserType, 'name' | 'email' | 'roleId' | 'password' | 'phoneNumber' | 'avatar'>,
   ): Promise<Omit<UserType, 'password' | 'totpSecret'>> {
     return this.prismaService.user.create({
-      data: user,
+      data: {
+        ...user,
+        status: UserStatus.ACTIVE,
+      },
       omit: {
         password: true,
         totpSecret: true,
@@ -28,7 +31,10 @@ export class AuthRepository {
     user: Pick<UserType, 'name' | 'email' | 'roleId' | 'password' | 'phoneNumber'>,
   ): Promise<UserType & { role: RoleType }> {
     return this.prismaService.user.create({
-      data: user,
+      data: {
+        ...user,
+        status: UserStatus.ACTIVE,
+      },
       include: {
         role: true,
       },
