@@ -17,7 +17,7 @@ export const CartItemSchema = z.object({
 
 export const GetCartItemParamsSchema = z
   .object({
-    cartItemId: z.number(),
+    cartItemId: z.coerce.number().int().positive(),
   })
   .strict();
 
@@ -49,9 +49,9 @@ export const DeleteCartBodySchema = z
   })
   .strict();
 
-export type CartItem = z.infer<typeof CartItemSchema>;
-export type GetCartItemParams = z.infer<typeof GetCartItemParamsSchema>;
-export type GetCartRes = z.infer<typeof GetCartResSchema>;
-export type AddToCartBody = z.infer<typeof AddToCartBodySchema>;
-export type UpdateCartItemBody = z.infer<typeof UpdateCartItemBodySchema>;
-export type DeleteCartBody = z.infer<typeof DeleteCartBodySchema>;
+export type CartItemType = z.infer<typeof CartItemSchema>;
+export type GetCartItemParamsType = z.infer<typeof GetCartItemParamsSchema>;
+export type GetCartResType = z.infer<typeof GetCartResSchema>;
+export type AddToCartBodyType = z.infer<typeof AddToCartBodySchema>;
+export type UpdateCartItemBodyType = z.infer<typeof UpdateCartItemBodySchema>;
+export type DeleteCartBodyType = z.infer<typeof DeleteCartBodySchema>;

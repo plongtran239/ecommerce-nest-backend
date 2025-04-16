@@ -16,4 +16,4 @@ export const SKUSchema = z.object({
   updatedAt: z.date(),
 });
 
-export type SKUSchemaType = z.infer<typeof SKUSchema>;
+export type SKUType = z.infer<typeof SKUSchema>;
