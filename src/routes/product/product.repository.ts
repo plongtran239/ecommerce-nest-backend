@@ -5,10 +5,10 @@ import {
   CreateProductBodyType,
   GetProductDetailResType,
   GetProductsResType,
-  ProductType,
   UpdateProductBodyType,
 } from 'src/routes/product/product.model';
 import { ALL_LANGUAGE_CODE, OrderByType, SORT_BY, SortByType } from 'src/shared/constants/other.constant';
+import { ProductType } from 'src/shared/models/shared-product.model';
 import { PrismaService } from 'src/shared/services/prisma.service';
 
 @Injectable()
