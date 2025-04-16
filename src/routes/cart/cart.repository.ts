@@ -111,6 +111,14 @@ export class CartRepository {
     };
   }
 
+  async findUnique(
+    where: { id: number } | { userId_skuId: { skuId: number; userId: number } },
+  ): Promise<CartItemType | null> {
+    return await this.prisma.cartItem.findUnique({
+      where,
+    });
+  }
+
   async create({ data, userId }: { data: AddToCartBodyType; userId: number }): Promise<CartItemType> {
     const { skuId, quantity } = data;
 

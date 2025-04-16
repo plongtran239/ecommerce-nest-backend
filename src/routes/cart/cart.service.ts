@@ -20,6 +20,19 @@ export class CartService {
   }
 
   async create({ body, userId }: { body: AddToCartBodyType; userId: number }): Promise<CartItemType> {
+    const existingCartItem = await this.cartRepository.findUnique({ userId_skuId: { skuId: body.skuId, userId } });
+
+    if (existingCartItem) {
+      return await this.cartRepository.update({
+        cartItemId: existingCartItem.id,
+        data: {
+          skuId: existingCartItem.skuId,
+          quantity: existingCartItem.quantity + body.quantity,
+        },
+        userId,
+      });
+    }
+
     return await this.cartRepository.create({ data: body, userId });
   }
 
@@ -34,6 +47,7 @@ export class CartService {
   }): Promise<CartItemType> {
     return await this.cartRepository.update({ cartItemId, data: body, userId });
   }
+
   async delete({ body, userId }: { body: DeleteCartBodyType; userId: number }): Promise<{ message: string }> {
     const { count } = await this.cartRepository.delete({ body, userId });
 
