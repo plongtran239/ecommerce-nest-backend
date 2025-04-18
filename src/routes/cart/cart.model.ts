@@ -4,6 +4,7 @@ import { PaginationSchema } from 'src/shared/models/pagination.model';
 import { ProductTranslationSchema } from 'src/shared/models/share-product-translation.model';
 import { ProductSchema } from 'src/shared/models/shared-product.model';
 import { SKUSchema } from 'src/shared/models/shared-sku.model';
+import { UserSchema } from 'src/shared/models/shared-user.model';
 
 export const CartItemSchema = z.object({
   id: z.number(),
@@ -21,12 +22,21 @@ export const GetCartItemParamsSchema = z
   })
   .strict();
 
-export const CartItemDetailSchema = CartItemSchema.extend({
-  sku: SKUSchema.extend({
-    product: ProductSchema.extend({
-      productTranslations: z.array(ProductTranslationSchema),
-    }),
+export const CartItemDetailSchema = z.object({
+  shop: UserSchema.pick({
+    id: true,
+    name: true,
+    avatar: true,
   }),
+  cartItems: z.array(
+    CartItemSchema.extend({
+      sku: SKUSchema.extend({
+        product: ProductSchema.extend({
+          productTranslations: z.array(ProductTranslationSchema),
+        }),
+      }),
+    }),
+  ),
 });
 
 export const GetCartResSchema = PaginationSchema.extend({
@@ -51,6 +61,7 @@ export const DeleteCartBodySchema = z
 
 export type CartItemType = z.infer<typeof CartItemSchema>;
 export type GetCartItemParamsType = z.infer<typeof GetCartItemParamsSchema>;
+export type CartItemDetailType = z.infer<typeof CartItemDetailSchema>;
 export type GetCartResType = z.infer<typeof GetCartResSchema>;
 export type AddToCartBodyType = z.infer<typeof AddToCartBodySchema>;
 export type UpdateCartItemBodyType = z.infer<typeof UpdateCartItemBodySchema>;

@@ -8,6 +8,7 @@ import {
 } from 'src/routes/cart/cart.error';
 import {
   AddToCartBodyType,
+  CartItemDetailType,
   CartItemType,
   DeleteCartBodyType,
   GetCartResType,
@@ -62,52 +63,68 @@ export class CartRepository {
   }
 
   async findAll({ page, limit }: PaginationQueryType, userId: number, languageId: string): Promise<GetCartResType> {
-    const take = limit;
-    const skip = (page - 1) * limit;
-
-    const [totalItems, cartItems] = await Promise.all([
-      this.prisma.cartItem.count({
-        where: {
-          userId,
+    const cartItems = await this.prisma.cartItem.findMany({
+      where: {
+        userId,
+        sku: {
+          product: {
+            deletedAt: null,
+            publishedAt: {
+              lte: new Date(),
+              not: null,
+            },
+          },
         },
-      }),
-      this.prisma.cartItem.findMany({
-        where: {
-          userId,
-        },
-        include: {
-          sku: {
-            include: {
-              product: {
-                include: {
-                  productTranslations: {
-                    where:
-                      languageId === ALL_LANGUAGE_CODE
-                        ? { deletedAt: null }
-                        : {
-                            languageId,
-                            deletedAt: null,
-                          },
-                  },
+      },
+      include: {
+        sku: {
+          include: {
+            product: {
+              include: {
+                productTranslations: {
+                  where: languageId === ALL_LANGUAGE_CODE ? { deletedAt: null } : { languageId, deletedAt: null },
                 },
+                createdBy: true,
               },
             },
           },
         },
-        skip,
-        take,
-        orderBy: {
-          createdAt: 'desc',
-        },
-      }),
-    ]);
+      },
+      orderBy: {
+        updatedAt: 'desc',
+      },
+    });
+
+    const groupMap = new Map<number, CartItemDetailType>();
+
+    for (const cartItem of cartItems) {
+      const shopId = cartItem.sku.product.createdById;
+
+      if (shopId && cartItem.sku.product.createdBy) {
+        if (!groupMap.has(shopId)) {
+          groupMap.set(shopId, {
+            shop: {
+              ...cartItem.sku.product.createdBy,
+            },
+            cartItems: [],
+          });
+        }
+        groupMap.get(shopId)?.cartItems.push(cartItem);
+      }
+    }
+    const sortedGroups = Array.from(groupMap.values());
+
+    const skip = (page - 1) * limit;
+    const take = limit;
+    const totalGroups = sortedGroups.length;
+    const pagedGroups = sortedGroups.slice(skip, skip + take);
 
     return {
-      data: cartItems,
-      totalItems,
+      data: pagedGroups,
+      totalItems: totalGroups,
       page,
       limit,
-      totalPages: Math.ceil(totalItems / limit),
+      totalPages: Math.ceil(totalGroups / limit),
     };
   }
 
