@@ -16,7 +16,7 @@ export class CartService {
   constructor(private readonly cartRepository: CartRepository) {}
 
   async findAll({ query, userId }: { query: PaginationQueryType; userId: number }): Promise<GetCartResType> {
-    return await this.cartRepository.findAll(query, userId, I18nContext.current()?.lang as string);
+    return await this.cartRepository.list(query, userId, I18nContext.current()?.lang as string);
   }
 
   async create({ body, userId }: { body: AddToCartBodyType; userId: number }): Promise<CartItemType> {
