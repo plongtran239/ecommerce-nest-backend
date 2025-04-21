@@ -20,19 +20,6 @@ export class CartService {
   }
 
   async create({ body, userId }: { body: AddToCartBodyType; userId: number }): Promise<CartItemType> {
-    const existingCartItem = await this.cartRepository.findUnique({ userId_skuId: { skuId: body.skuId, userId } });
-
-    if (existingCartItem) {
-      return await this.cartRepository.update({
-        cartItemId: existingCartItem.id,
-        data: {
-          skuId: existingCartItem.skuId,
-          quantity: existingCartItem.quantity + body.quantity,
-        },
-        userId,
-      });
-    }
-
     return await this.cartRepository.create({ data: body, userId });
   }
 

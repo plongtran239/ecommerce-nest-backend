@@ -189,7 +189,7 @@ export class CartRepository {
                 ), '[]'::json)
               )
            )
-         )
+         ) ORDER BY "CartItem"."updatedAt" DESC
        ) AS "cartItems",
        jsonb_build_object(
          'id', "User"."id",
@@ -222,21 +222,15 @@ export class CartRepository {
     };
   }
 
-  async findUnique(
-    where: { id: number } | { userId_skuId: { skuId: number; userId: number } },
-  ): Promise<CartItemType | null> {
-    return await this.prisma.cartItem.findUnique({
-      where,
-    });
-  }
-
   async create({ data, userId }: { data: AddToCartBodyType; userId: number }): Promise<CartItemType> {
     const { skuId, quantity } = data;
 
     await this.validateSKU(skuId, quantity);
 
-    return await this.prisma.cartItem.create({
-      data: {
+    return await this.prisma.cartItem.upsert({
+      where: { userId_skuId: { skuId, userId } },
+      update: { quantity: { increment: quantity } },
+      create: {
         skuId,
         quantity,
         userId,
