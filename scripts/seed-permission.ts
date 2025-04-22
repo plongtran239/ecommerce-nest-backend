@@ -6,7 +6,7 @@ import { PrismaService } from 'src/shared/services/prisma.service';
 
 const SellerModule = ['AUTH', 'MEDIA', 'MANAGE-PRODUCT', 'PRODUCT-TRANSLATION', 'PROFILE', 'CART'];
 
-const ClientModule = ['AUTH', 'MEDIA', 'PRODUCT', 'PROFILE', 'CART'];
+const ClientModule = ['AUTH', 'MEDIA', 'PRODUCT', 'PROFILE', 'CART', 'ORDERS'];
 
 const prisma = new PrismaService();
 
