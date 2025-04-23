@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 
 import {
+  InvalidQuantityException,
   NotEnoughStockSKUException,
   NotFoundProductException,
   NotFoundSKUException,
@@ -24,19 +25,40 @@ import { PrismaService } from 'src/shared/services/prisma.service';
 export class CartRepository {
   constructor(private prisma: PrismaService) {}
 
-  private async validateSKU(skuId: number, quantity: number): Promise<SKUType> {
-    const sku = await this.prisma.sKU.findUnique({
-      where: {
-        id: skuId,
-        deletedAt: null,
-      },
-      include: {
-        product: true,
-      },
-    });
+  private async validateSKU({
+    skuId,
+    quantity,
+    userId,
+    isCreate,
+  }: {
+    skuId: number;
+    quantity: number;
+    userId: number;
+    isCreate: boolean;
+  }): Promise<SKUType> {
+    const [cartItem, sku] = await Promise.all([
+      this.prisma.cartItem.findUnique({
+        where: {
+          userId_skuId: {
+            userId,
+            skuId,
+          },
+        },
+      }),
+      this.prisma.sKU.findUnique({
+        where: { id: skuId, deletedAt: null },
+        include: {
+          product: true,
+        },
+      }),
+    ]);
 
     if (!sku) {
       throw NotFoundSKUException;
+    }
+
+    if (isCreate && cartItem && cartItem.quantity + quantity > sku.stock) {
+      throw InvalidQuantityException;
     }
 
     // Check if sku is out of stock
@@ -225,7 +247,7 @@ export class CartRepository {
   async create({ data, userId }: { data: AddToCartBodyType; userId: number }): Promise<CartItemType> {
     const { skuId, quantity } = data;
 
-    await this.validateSKU(skuId, quantity);
+    await this.validateSKU({ skuId, quantity, userId, isCreate: true });
 
     return await this.prisma.cartItem.upsert({
       where: { userId_skuId: { skuId, userId } },
@@ -249,7 +271,7 @@ export class CartRepository {
   }): Promise<CartItemType> {
     const { skuId, quantity } = data;
 
-    await this.validateSKU(skuId, quantity);
+    await this.validateSKU({ skuId, quantity, userId, isCreate: false });
 
     return await this.prisma.cartItem.update({
       where: { id: cartItemId, userId },

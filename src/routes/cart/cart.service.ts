@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { I18nContext } from 'nestjs-i18n';
 
+import { NotFoundCartItemException } from 'src/routes/cart/cart.error';
 import {
   AddToCartBodyType,
   CartItemType,
@@ -9,6 +10,7 @@ import {
   UpdateCartItemBodyType,
 } from 'src/routes/cart/cart.model';
 import { CartRepository } from 'src/routes/cart/cart.repository';
+import { isPrismaNotFoundError } from 'src/shared/helpers';
 import { PaginationQueryType } from 'src/shared/models/pagination.model';
 
 @Injectable()
@@ -32,7 +34,15 @@ export class CartService {
     body: UpdateCartItemBodyType;
     userId: number;
   }): Promise<CartItemType> {
-    return await this.cartRepository.update({ cartItemId, data: body, userId });
+    try {
+      return await this.cartRepository.update({ cartItemId, data: body, userId });
+    } catch (error) {
+      if (isPrismaNotFoundError(error)) {
+        throw NotFoundCartItemException;
+      }
+
+      throw error;
+    }
   }
 
   async delete({ body, userId }: { body: DeleteCartBodyType; userId: number }): Promise<{ message: string }> {
