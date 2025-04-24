@@ -13,6 +13,7 @@ import { CategoryModule } from 'src/routes/category/category.module';
 import { LanguageModule } from 'src/routes/language/language.module';
 import { MediaModule } from 'src/routes/media/media.module';
 import { OrderModule } from 'src/routes/order/order.module';
+import { PaymentModule } from 'src/routes/payment/payment.module';
 import { PermissionModule } from 'src/routes/permission/permission.module';
 import { ProductTranslationModule } from 'src/routes/product/product-translation/product-translation.module';
 import { ProductModule } from 'src/routes/product/product.module';
@@ -50,6 +51,7 @@ import { SharedModule } from 'src/shared/shared.module';
     ProductTranslationModule,
     CartModule,
     OrderModule,
+    PaymentModule,
   ],
   providers: [
     {

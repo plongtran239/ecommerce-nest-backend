@@ -16,6 +16,7 @@ import {
   GetOrderListResType,
 } from 'src/routes/order/order.model';
 import { ORDER_STATUS } from 'src/shared/constants/order.constant';
+import { PAYMENT_STATUS } from 'src/shared/constants/payment.constant';
 import { PrismaService } from 'src/shared/services/prisma.service';
 
 @Injectable()
@@ -122,7 +123,13 @@ export class OrderRepository {
     }
 
     const orders = await this.prisma.$transaction(async (tx) => {
-      const orders = await Promise.all(
+      const payment = await tx.payment.create({
+        data: {
+          status: PAYMENT_STATUS.PENDING,
+        },
+      });
+
+      const orders$ = Promise.all(
         data.map((item) =>
           tx.order.create({
             data: {
@@ -131,6 +138,7 @@ export class OrderRepository {
               receiver: item.receiver,
               createdById: userId,
               shopId: item.shopId,
+              paymentId: payment.id,
               items: {
                 create: item.cartItemIds.map((cartItemId) => {
                   const cartItem = cartItemMap.get(cartItemId)!;
@@ -165,13 +173,32 @@ export class OrderRepository {
           }),
         ),
       );
-      await tx.cartItem.deleteMany({
+
+      const cartItem$ = tx.cartItem.deleteMany({
         where: {
           id: {
             in: allCartItemIds,
           },
         },
       });
+
+      const skus$ = Promise.all(
+        cartItems.map((item) =>
+          tx.sKU.update({
+            where: {
+              id: item.sku.id,
+            },
+            data: {
+              stock: {
+                decrement: item.quantity,
+              },
+            },
+          }),
+        ),
+      );
+
+      const [orders] = await Promise.all([orders$, cartItem$, skus$]);
+
       return orders;
     });
 

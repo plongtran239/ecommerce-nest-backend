@@ -428,16 +428,18 @@ model ProductSKUSnapshot {
 }
 
 model Order {
-  id       Int                  @id @default(autoincrement())
-  userId   Int
-  user     User                 @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  status   OrderStatus
-  items    ProductSKUSnapshot[]
-  products Product[]
+  id        Int                  @id @default(autoincrement())
+  userId    Int
+  user      User                 @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  status    OrderStatus
+  items     ProductSKUSnapshot[]
+  products  Product[]
   ///[Receiver]
-  receiver Json
-  shopId   Int?
-  shop     User?                @relation("Shop", fields: [shopId], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  receiver  Json
+  shopId    Int?
+  shop      User?                @relation("Shop", fields: [shopId], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  paymentId Int
+  payment   Payment              @relation(fields: [paymentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   createdById Int?
   createdBy   User? @relation("OrderCreatedBy", fields: [createdById], references: [id], onDelete: SetNull, onUpdate: NoAction)
@@ -471,7 +473,7 @@ model PaymentTransaction {
   id                 Int      @id @default(autoincrement())
   gateway            String   @db.VarChar(100)
   transactionDate    DateTime @default(now())
-  accountNumber      String   @db.VarChar(100)
+  accountNumber      String?  @db.VarChar(100)
   subAccount         String?  @db.VarChar(250)
   amountIn           Int      @default(0)
   amountOut          Int      @default(0)
@@ -482,6 +484,15 @@ model PaymentTransaction {
   body               String?  @db.Text
 
   createdAt DateTime @default(now())
+}
+
+model Payment {
+  id     Int           @id @default(autoincrement())
+  orders Order[]
+  status PaymentStatus
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Message {
@@ -503,6 +514,12 @@ enum OrderStatus {
   DELIVERED
   RETURNED
   CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
 }
 
 enum VerificationCodeType {

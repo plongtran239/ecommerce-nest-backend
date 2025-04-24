@@ -15,5 +15,7 @@ export const SORT_BY = {
   SALE: 'sale',
 } as const;
 
+export const PREFIX_PAYMENT_CODE = 'DH';
+
 export type OrderByType = (typeof ORDER_BY)[keyof typeof ORDER_BY];
 export type SortByType = (typeof SORT_BY)[keyof typeof SORT_BY];
