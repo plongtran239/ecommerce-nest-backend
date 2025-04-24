@@ -22,7 +22,7 @@ const configSchema = z.object({
   ACCESS_TOKEN_EXPIRES_IN: z.string().nonempty(),
   REFRESH_TOKEN_SECRET: z.string().nonempty(),
   REFRESH_TOKEN_EXPIRES_IN: z.string().nonempty(),
-  SECRET_API_KEY: z.string().nonempty(),
+  PAYMENT_API_KEY: z.string().nonempty(),
 
   GOOGLE_CLIENT_ID: z.string().nonempty(),
   GOOGLE_CLIENT_SECRET: z.string().nonempty(),
