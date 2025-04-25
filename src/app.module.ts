@@ -1,3 +1,4 @@
+import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
 import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { AcceptLanguageResolver, I18nModule, QueryResolver } from 'nestjs-i18n';
@@ -20,12 +21,21 @@ import { ProductModule } from 'src/routes/product/product.module';
 import { ProfileModule } from 'src/routes/profile/profile.module';
 import { RoleModule } from 'src/routes/role/role.module';
 import { UserModule } from 'src/routes/user/user.module';
+import envConfig from 'src/shared/config';
 import { HttpExceptionFilter } from 'src/shared/filters/http-exception.filter';
 import CustomZodValidationPipe from 'src/shared/pipes/zod-validation.pipe';
 import { SharedModule } from 'src/shared/shared.module';
 
 @Module({
   imports: [
+    BullModule.forRoot({
+      connection: {
+        username: envConfig.REDIS_USERNAME,
+        password: envConfig.REDIS_PASSWORD,
+        host: envConfig.REDIS_HOST,
+        port: Number(envConfig.REDIS_PORT),
+      },
+    }),
     I18nModule.forRoot({
       fallbackLanguage: 'en',
       loaderOptions: {

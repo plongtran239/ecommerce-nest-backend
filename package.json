@@ -26,6 +26,7 @@
     "run:script": "ts-node test-script.ts"
   },
   "dependencies": {
+    "@nestjs/bullmq": "^11.0.2",
     "@nestjs/common": "^11.0.1",
     "@nestjs/core": "^11.0.1",
     "@nestjs/jwt": "^11.0.0",
@@ -35,6 +36,7 @@
     "@react-email/components": "0.0.33",
     "@react-email/render": "1.0.5",
     "bcrypt": "^5.1.1",
+    "bullmq": "^5.51.0",
     "date-fns": "^4.1.0",
     "dotenv": "^16.4.7",
     "googleapis": "^146.0.0",
