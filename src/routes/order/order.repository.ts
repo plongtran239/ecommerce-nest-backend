@@ -11,17 +11,22 @@ import {
 import {
   CancelOrderResType,
   CreateOrderBodyType,
+  CreateOrderResType,
   GetOrderDetailResType,
   GetOrderListQueryType,
   GetOrderListResType,
 } from 'src/routes/order/order.model';
+import { OrderProducer } from 'src/routes/order/order.producer';
 import { ORDER_STATUS } from 'src/shared/constants/order.constant';
 import { PAYMENT_STATUS } from 'src/shared/constants/payment.constant';
 import { PrismaService } from 'src/shared/services/prisma.service';
 
 @Injectable()
 export class OrderRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly orderProducer: OrderProducer,
+  ) {}
 
   async list({ query, userId }: { query: GetOrderListQueryType; userId: number }): Promise<GetOrderListResType> {
     const { page, limit, status } = query;
@@ -60,7 +65,7 @@ export class OrderRepository {
     };
   }
 
-  async create({ data, userId }: { data: CreateOrderBodyType; userId: number }) {
+  async create({ data, userId }: { data: CreateOrderBodyType; userId: number }): Promise<CreateOrderResType> {
     const allCartItemIds = data.map((item) => item.cartItemIds).flat();
 
     const cartItems = await this.prisma.cartItem.findMany({
@@ -126,6 +131,9 @@ export class OrderRepository {
       const payment = await tx.payment.create({
         data: {
           status: PAYMENT_STATUS.PENDING,
+        },
+        select: {
+          id: true,
         },
       });
 
@@ -197,7 +205,9 @@ export class OrderRepository {
         ),
       );
 
-      const [orders] = await Promise.all([orders$, cartItem$, skus$]);
+      const addCancelPaymentJob$ = this.orderProducer.addCancelPaymentJob(payment.id);
+
+      const [orders] = await Promise.all([orders$, cartItem$, skus$, addCancelPaymentJob$]);
 
       return orders;
     });

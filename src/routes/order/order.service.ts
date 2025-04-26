@@ -10,11 +10,11 @@ export class OrderService {
   constructor(private readonly orderRepository: OrderRepository) {}
 
   async list({ query, userId }: { query: GetOrderListQueryType; userId: number }) {
-    return this.orderRepository.list({ query, userId });
+    return await this.orderRepository.list({ query, userId });
   }
 
   async create({ body, userId }: { body: CreateOrderBodyType; userId: number }) {
-    return this.orderRepository.create({ data: body, userId });
+    return await this.orderRepository.create({ data: body, userId });
   }
 
   async getDetail({ orderId, userId }: { orderId: number; userId: number }) {

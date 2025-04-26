@@ -5,6 +5,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { AccessTokenGuard } from 'src/shared/guards/access-token.guard';
 import { AuthenticationGuard } from 'src/shared/guards/authentication.guard';
 import { PaymentAPIKeyGuard } from 'src/shared/guards/payment-api-key.guard';
+import { SharedPaymentRepository } from 'src/shared/repositories/shared-payment.repository';
 import { SharedRoleRepository } from 'src/shared/repositories/shared-role.repository';
 import { SharedUserRepository } from 'src/shared/repositories/shared-user.repository';
 import { TwoFactorAuthService } from 'src/shared/services/2fa.service';
@@ -21,6 +22,7 @@ const sharedServices = [
   TwoFactorAuthService,
   SharedUserRepository,
   SharedRoleRepository,
+  SharedPaymentRepository,
 ];
 
 @Global()

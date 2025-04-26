@@ -5,6 +5,7 @@ import { AcceptLanguageResolver, I18nModule, QueryResolver } from 'nestjs-i18n';
 import { ZodSerializerInterceptor } from 'nestjs-zod';
 import path from 'path';
 
+import { PaymentConsumer } from 'src/queues/payment.consumer';
 import { AuthModule } from 'src/routes/auth/auth.module';
 import { BrandTranslationModule } from 'src/routes/brand/brand-translation/brand-translation.module';
 import { BrandModule } from 'src/routes/brand/brand.module';
@@ -76,6 +77,7 @@ import { SharedModule } from 'src/shared/shared.module';
       provide: APP_FILTER,
       useClass: HttpExceptionFilter,
     },
+    PaymentConsumer,
   ],
 })
 export class AppModule {}

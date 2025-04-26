@@ -8,6 +8,10 @@ export class PaymentService {
   constructor(private readonly paymentRepository: PaymentRepository) {}
 
   async receiver(body: WebhookPaymentBodyType) {
-    return await this.paymentRepository.receiver(body);
+    await this.paymentRepository.receiver(body);
+
+    return {
+      message: 'Make payment successfully',
+    };
   }
 }
