@@ -17,6 +17,7 @@ import {
   GetOrderListResType,
 } from 'src/routes/order/order.model';
 import { OrderProducer } from 'src/routes/order/order.producer';
+import { PaymentProducer } from 'src/routes/payment/payment.producer';
 import { ORDER_STATUS } from 'src/shared/constants/order.constant';
 import { PAYMENT_STATUS } from 'src/shared/constants/payment.constant';
 import { PrismaService } from 'src/shared/services/prisma.service';
@@ -26,6 +27,7 @@ export class OrderRepository {
   constructor(
     private readonly prisma: PrismaService,
     private readonly orderProducer: OrderProducer,
+    private readonly paymentProducer: PaymentProducer,
   ) {}
 
   async list({ query, userId }: { query: GetOrderListQueryType; userId: number }): Promise<GetOrderListResType> {
@@ -237,22 +239,59 @@ export class OrderRepository {
         userId,
         deletedAt: null,
       },
+      include: {
+        items: true,
+      },
     });
 
     if (order.status !== ORDER_STATUS.PENDING_PAYMENT) {
       throw CannotCancelOrderException;
     }
 
-    return await this.prisma.order.update({
-      where: {
-        id: orderId,
-        userId,
-        deletedAt: null,
-      },
-      data: {
-        status: ORDER_STATUS.CANCELLED,
-        updatedById: userId,
-      },
+    const [cancelledOrder] = await this.prisma.$transaction(async (tx) => {
+      const updateOrder$ = tx.order.update({
+        where: {
+          id: orderId,
+          userId,
+          deletedAt: null,
+        },
+        data: {
+          status: ORDER_STATUS.CANCELLED,
+          updatedById: userId,
+        },
+      });
+
+      const updateSKU$ = Promise.all(
+        order.items
+          .filter((item) => item.skuId)
+          .map((item) => {
+            return tx.sKU.update({
+              where: {
+                id: item.skuId as number,
+              },
+              data: {
+                stock: {
+                  increment: item.quantity,
+                },
+              },
+            });
+          }),
+      );
+
+      const updatePayment$ = tx.payment.update({
+        where: {
+          id: order.paymentId,
+        },
+        data: {
+          status: PAYMENT_STATUS.FAILED,
+        },
+      });
+
+      const removePaymentJob$ = this.paymentProducer.removeCancelPaymentJob(order.paymentId);
+
+      return Promise.all([updateOrder$, updateSKU$, updatePayment$, removePaymentJob$]);
     });
+
+    return cancelledOrder;
   }
 }

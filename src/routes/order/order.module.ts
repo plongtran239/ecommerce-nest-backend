@@ -5,6 +5,7 @@ import { OrderController } from 'src/routes/order/order.controller';
 import { OrderProducer } from 'src/routes/order/order.producer';
 import { OrderRepository } from 'src/routes/order/order.repository';
 import { OrderService } from 'src/routes/order/order.service';
+import { PaymentProducer } from 'src/routes/payment/payment.producer';
 import { PAYMENT_QUEUE_NAME } from 'src/shared/constants/queue.constant';
 
 @Module({
@@ -14,6 +15,6 @@ import { PAYMENT_QUEUE_NAME } from 'src/shared/constants/queue.constant';
     }),
   ],
   controllers: [OrderController],
-  providers: [OrderProducer, OrderService, OrderRepository],
+  providers: [OrderProducer, OrderService, OrderRepository, PaymentProducer],
 })
 export class OrderModule {}

@@ -15,5 +15,6 @@ import { PAYMENT_QUEUE_NAME } from 'src/shared/constants/queue.constant';
   ],
   controllers: [PaymentController],
   providers: [PaymentService, PaymentRepository, PaymentProducer],
+  exports: [PaymentProducer],
 })
 export class PaymentModule {}
