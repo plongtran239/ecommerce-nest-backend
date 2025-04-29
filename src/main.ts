@@ -3,6 +3,7 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 
 import { AppModule } from 'src/app.module';
 import { setupSwagger } from 'src/swagger';
+import { WebSocketAdapter } from 'src/websocket/websocket.adapter';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -10,6 +11,8 @@ async function bootstrap() {
       origin: '*',
     },
   });
+
+  app.useWebSocketAdapter(new WebSocketAdapter(app));
 
   setupSwagger(app);
 

@@ -26,6 +26,7 @@ import envConfig from 'src/shared/config';
 import { HttpExceptionFilter } from 'src/shared/filters/http-exception.filter';
 import CustomZodValidationPipe from 'src/shared/pipes/zod-validation.pipe';
 import { SharedModule } from 'src/shared/shared.module';
+import { WebSocketModule } from 'src/websocket/websocket.module';
 
 @Module({
   imports: [
@@ -63,6 +64,7 @@ import { SharedModule } from 'src/shared/shared.module';
     CartModule,
     OrderModule,
     PaymentModule,
+    WebSocketModule,
   ],
   providers: [
     {
