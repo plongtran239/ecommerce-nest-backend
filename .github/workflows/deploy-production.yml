@@ -52,6 +52,7 @@ jobs:
             docker pull plongtran239/ecom-backend:v0
             docker compose down
             docker compose up -d
+            docker image prune -f
 
       - name: send telegram message after build
         if: success()
