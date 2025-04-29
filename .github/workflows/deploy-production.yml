@@ -1,0 +1,24 @@
+name: Deploy Production
+
+on:
+  push:
+    branches: ['main']
+  pull_request:
+    branches: ['main']
+
+jobs:
+  build:
+    name: Build Backend API
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.15.0
+          cache: 'npm'
+      - name: Create .env file
+        run: echo "${{secrets.ENV_PRODUCTION}}" > .env
+      - run: npm i --force
+      - run: npx prisma generate
+      - run: npm run build
