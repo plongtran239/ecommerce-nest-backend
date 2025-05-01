@@ -35,6 +35,7 @@ export class PaymentRepository {
   private async getAndValidatePaymentId(body: WebhookPaymentBodyType): Promise<{
     paymentId: number;
     orders: OrderIncludeProductSKUSnapshotType[];
+    userId: number;
   }> {
     const paymentId = body.code
       ? Number(body.code.split(PREFIX_PAYMENT_CODE)[1])
@@ -77,6 +78,8 @@ export class PaymentRepository {
 
     const orders = payment.orders as OrderIncludeProductSKUSnapshotType[];
 
+    const userId = orders[0].userId;
+
     const totalPrice = this.getTotalPrice(orders);
 
     if (body.transferAmount !== totalPrice) {
@@ -89,10 +92,14 @@ export class PaymentRepository {
     return {
       paymentId,
       orders,
+      userId,
     };
   }
 
-  async receiver(body: WebhookPaymentBodyType): Promise<void> {
+  async receiver(body: WebhookPaymentBodyType): Promise<{
+    userId: number;
+    paymentId: number;
+  }> {
     let amountIn = 0;
     let amountOut = 0;
 
@@ -102,7 +109,7 @@ export class PaymentRepository {
       amountOut = body.transferAmount;
     }
 
-    const { paymentId, orders } = await this.getAndValidatePaymentId(body);
+    const { paymentId, orders, userId } = await this.getAndValidatePaymentId(body);
 
     await this.prisma.$transaction(async (tx) => {
       const payment$ = tx.payment.update({
@@ -146,5 +153,10 @@ export class PaymentRepository {
 
       await Promise.all([payment$, paymentTransaction$, order$, paymentJob$]);
     });
+
+    return {
+      userId,
+      paymentId,
+    };
   }
 }

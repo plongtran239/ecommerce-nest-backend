@@ -6,6 +6,14 @@ import { PrismaService } from 'src/shared/services/prisma.service';
 export class SharedWebSocketRepository {
   constructor(private readonly prisma: PrismaService) {}
 
+  async findManyByUserId(userId: number) {
+    return await this.prisma.websocket.findMany({
+      where: {
+        userId,
+      },
+    });
+  }
+
   async create(data: { socketId: string; userId: number }) {
     return await this.prisma.websocket.create({
       data: {
