@@ -8,6 +8,7 @@ import { PaymentAPIKeyGuard } from 'src/shared/guards/payment-api-key.guard';
 import { SharedPaymentRepository } from 'src/shared/repositories/shared-payment.repository';
 import { SharedRoleRepository } from 'src/shared/repositories/shared-role.repository';
 import { SharedUserRepository } from 'src/shared/repositories/shared-user.repository';
+import { SharedWebSocketRepository } from 'src/shared/repositories/shared-websocket.repository';
 import { TwoFactorAuthService } from 'src/shared/services/2fa.service';
 import { EmailService } from 'src/shared/services/email.service';
 import { HashingService } from 'src/shared/services/hashing.service';
@@ -23,6 +24,7 @@ const sharedServices = [
   SharedUserRepository,
   SharedRoleRepository,
   SharedPaymentRepository,
+  SharedWebSocketRepository,
 ];
 
 @Global()
