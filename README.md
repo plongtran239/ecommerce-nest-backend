@@ -1,6 +1,6 @@
 # EcomNest
 
-**EcomNest** is a API built with [Nest.js](https://nestjs.com/). It is a e-commerce API that allows you to manage products, orders, and users. It is designed to be easy to use and extendable.
+[EcomNest](https://api.ecom.tranphuoclong.io.vn/documentation) is a API built with [Nest.js](https://nestjs.com/). It is a e-commerce API that allows you to manage products, orders, and users. It is designed to be easy to use and extendable.
 
 ## 🚀 Tech Stack
 
@@ -30,6 +30,7 @@ npm install
 cp .env.example .env
 npx prisma migrate deploy
 npx prisma generate
+npm run start:dev
 ```
 
 After that, backend will be available at [http://localhost:4000](http://localhost:4000)
