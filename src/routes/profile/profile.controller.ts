@@ -1,4 +1,5 @@
 import { Body, Controller, Get, Put } from '@nestjs/common';
+import { ApiBearerAuth } from '@nestjs/swagger';
 import { ZodSerializerDto } from 'nestjs-zod';
 
 import { ChangePasswordBodyDTO, UpdateUserProfileBodyDTO } from 'src/routes/profile/profile.dto';
@@ -12,12 +13,14 @@ export class ProfileController {
   constructor(private readonly profileService: ProfileService) {}
 
   @Get()
+  @ApiBearerAuth()
   @ZodSerializerDto(GetUserProfileResDTO)
   get(@User('userId') userId: number) {
     return this.profileService.get(userId);
   }
 
   @Put()
+  @ApiBearerAuth()
   @ZodSerializerDto(UpdateUserProfileResDTO)
   update(@User('userId') userId: number, @Body() body: UpdateUserProfileBodyDTO) {
     return this.profileService.update({
@@ -27,6 +30,7 @@ export class ProfileController {
   }
 
   @Put('change-password')
+  @ApiBearerAuth()
   @ZodSerializerDto(MessageResDTO)
   changePassword(@User('userId') userId: number, @Body() body: ChangePasswordBodyDTO) {
     return this.profileService.changePassword({

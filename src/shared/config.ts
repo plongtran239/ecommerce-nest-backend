@@ -18,6 +18,9 @@ const configSchema = z.object({
 
   DATABASE_URL: z.string().nonempty(),
 
+  SWAGGER_USERNAME: z.string().nonempty(),
+  SWAGGER_PASSWORD: z.string().nonempty(),
+
   ACCESS_TOKEN_SECRET: z.string().nonempty(),
   ACCESS_TOKEN_EXPIRES_IN: z.string().nonempty(),
   REFRESH_TOKEN_SECRET: z.string().nonempty(),

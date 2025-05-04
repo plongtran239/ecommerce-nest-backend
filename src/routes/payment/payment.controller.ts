@@ -1,4 +1,5 @@
 import { Body, Controller, Post } from '@nestjs/common';
+import { ApiBearerAuth } from '@nestjs/swagger';
 import { ZodSerializerDto } from 'nestjs-zod';
 
 import { WebhookPaymentBodyDTO } from 'src/routes/payment/payment.dto';
@@ -12,6 +13,7 @@ export class PaymentController {
   constructor(private readonly paymentService: PaymentService) {}
 
   @Post('receiver')
+  @ApiBearerAuth()
   @Auth([AuthType.PaymentAPIKey])
   @ZodSerializerDto(MessageResDTO)
   async receiver(@Body() body: WebhookPaymentBodyDTO) {

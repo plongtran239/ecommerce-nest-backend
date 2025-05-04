@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
+import { ApiBearerAuth } from '@nestjs/swagger';
 import { ZodSerializerDto } from 'nestjs-zod';
 
 import { ManageProductService } from 'src/routes/product/manage-product.service';
@@ -19,6 +20,7 @@ export class ManageProductController {
   constructor(private readonly manageProductService: ManageProductService) {}
 
   @Get()
+  @ApiBearerAuth()
   @ZodSerializerDto(GetProductsResDTO)
   async list(
     @Query() query: GetManageProductsQueryDTO,
@@ -29,6 +31,7 @@ export class ManageProductController {
   }
 
   @Get(':productId')
+  @ApiBearerAuth()
   @ZodSerializerDto(GetProductDetailResDTO)
   async findById(
     @Param() params: GetProductParamsDTO,
@@ -43,12 +46,14 @@ export class ManageProductController {
   }
 
   @Post()
+  @ApiBearerAuth()
   @ZodSerializerDto(GetProductDetailResDTO)
   async create(@Body() body: CreateProductBodyDTO, @User('userId') userId: number) {
     return this.manageProductService.create({ data: body, createdById: userId });
   }
 
   @Put(':productId')
+  @ApiBearerAuth()
   @ZodSerializerDto(ProductDTO)
   async update(
     @Param() params: GetProductParamsDTO,
@@ -65,6 +70,7 @@ export class ManageProductController {
   }
 
   @Delete(':productId')
+  @ApiBearerAuth()
   @ZodSerializerDto(MessageResDTO)
   async delete(
     @Param() params: GetProductParamsDTO,

@@ -1,4 +1,5 @@
 import { Body, Controller, Get, Ip, Post, Query, Res } from '@nestjs/common';
+import { ApiBearerAuth } from '@nestjs/swagger';
 import { Response } from 'express';
 import { ZodSerializerDto } from 'nestjs-zod';
 
@@ -69,6 +70,7 @@ export class AuthController {
   }
 
   @Post('logout')
+  @ApiBearerAuth()
   @ZodSerializerDto(MessageResDTO)
   logout(@Body() body: LogoutBodyDTO) {
     return this.authService.logout(body.refreshToken);
@@ -108,12 +110,14 @@ export class AuthController {
   }
 
   @Post('2fa/setup')
+  @ApiBearerAuth()
   @ZodSerializerDto(TwoFactorSetupResDTO)
   setupTwoFactorAuth(@Body() _: EmptyBodyDTO, @User('userId') userId: number) {
     return this.authService.setupTwoFactorAuth(userId);
   }
 
   @Post('2fa/disable')
+  @ApiBearerAuth()
   @ZodSerializerDto(MessageResDTO)
   disableTwoFactorAuth(@Body() body: DisableTwoFactorBodyDTO, @User('userId') userId: number) {
     return this.authService.disableTwoFactorAuth({

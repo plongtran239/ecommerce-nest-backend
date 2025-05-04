@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
+import { ApiBearerAuth } from '@nestjs/swagger';
 import { ZodSerializerDto } from 'nestjs-zod';
 
 import {
@@ -33,6 +34,7 @@ export class BrandController {
   }
 
   @Post()
+  @ApiBearerAuth()
   @ZodSerializerDto(GetBrandDetailResDTO)
   create(@Body() body: CreateBrandBodyDTO, @User('userId') userId: number) {
     return this.brandService.create({
@@ -42,6 +44,7 @@ export class BrandController {
   }
 
   @Put(':brandId')
+  @ApiBearerAuth()
   @ZodSerializerDto(GetBrandDetailResDTO)
   update(@Body() body: UpdateBrandBodyDTO, @Param() params: GetBrandParamsDTO, @User('userId') userId: number) {
     return this.brandService.update({
@@ -52,6 +55,7 @@ export class BrandController {
   }
 
   @Delete(':brandId')
+  @ApiBearerAuth()
   @ZodSerializerDto(MessageResDTO)
   delete(@Param() params: GetBrandParamsDTO, @User('userId') userId: number) {
     return this.brandService.delete({

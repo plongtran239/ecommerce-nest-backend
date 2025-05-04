@@ -12,6 +12,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
+import { ApiBearerAuth } from '@nestjs/swagger';
 import { Response } from 'express';
 import path from 'path';
 
@@ -22,6 +23,7 @@ import { IsPublic } from 'src/shared/decorators/auth.decorator';
 @Controller('media')
 export class MediaController {
   @Post('images/upload')
+  @ApiBearerAuth()
   @UseInterceptors(
     FilesInterceptor('files', 100, {
       limits: {
