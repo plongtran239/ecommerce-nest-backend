@@ -3,6 +3,9 @@ default: up
 bootstrap: 
 	make install 
 	cp .env.example .env
+	npm prisma migrate deploy
+	npm run seed
+	npm run seed:permission
 	make up
 
 up:
