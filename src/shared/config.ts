@@ -42,10 +42,7 @@ const configSchema = z.object({
   RESEND_API_KEY: z.string().nonempty(),
   RESEND_EMAIL: z.string().nonempty(),
 
-  REDIS_HOST: z.string().nonempty(),
-  REDIS_PORT: z.string().nonempty(),
-  REDIS_USERNAME: z.string().optional(),
-  REDIS_PASSWORD: z.string().optional(),
+  REDIS_URL: z.string().nonempty(),
 });
 
 const configServer = configSchema.safeParse(process.env);

@@ -32,10 +32,7 @@ import { WebSocketModule } from 'src/websocket/websocket.module';
   imports: [
     BullModule.forRoot({
       connection: {
-        username: envConfig.REDIS_USERNAME,
-        password: envConfig.REDIS_PASSWORD,
-        host: envConfig.REDIS_HOST,
-        port: Number(envConfig.REDIS_PORT),
+        url: envConfig.REDIS_URL,
       },
     }),
     I18nModule.forRoot({

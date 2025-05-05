@@ -32,3 +32,7 @@ export const generateRandomFileName = (fileName: string) => {
 export const generateCancelPaymentJobId = (paymentId: number) => {
   return `payment-id-${paymentId}`;
 };
+
+export const generateUserIdRoom = (userId: number) => {
+  return `user-id-${userId}`;
+};

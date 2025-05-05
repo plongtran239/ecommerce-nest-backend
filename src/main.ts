@@ -12,7 +12,9 @@ async function bootstrap() {
     },
   });
 
-  app.useWebSocketAdapter(new WebSocketAdapter(app));
+  const webSocketAdapter = new WebSocketAdapter(app);
+  await webSocketAdapter.connectToRedis();
+  app.useWebSocketAdapter(webSocketAdapter);
 
   setupSwagger(app);
 
