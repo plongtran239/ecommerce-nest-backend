@@ -13,7 +13,9 @@ if (!fs.existsSync(path.resolve('.env'))) {
 }
 
 const configSchema = z.object({
+  PORT: z.string().optional(),
   APP_NAME: z.string().nonempty(),
+  DOMAIN_NAME: z.string().nonempty(),
   PREFIX_STATIC_ENDPOINT: z.string().nonempty(),
 
   DATABASE_URL: z.string().nonempty(),

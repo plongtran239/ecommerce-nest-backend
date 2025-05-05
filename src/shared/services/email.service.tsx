@@ -14,13 +14,13 @@ export class EmailService {
   }
 
   async sendOTP(payload: { email: string; code: string }) {
-    const { code } = payload;
+    const { code, email } = payload;
 
     const subject = 'OTP Verification Code';
 
     return await this.resend.emails.send({
-      from: 'EcommerceNestJS <onboarding@resend.dev>',
-      to: [envConfig.RESEND_EMAIL], // chỉ gửi được đến email đăng ký trên resend
+      from: `${envConfig.APP_NAME} <no-reply@${envConfig.DOMAIN_NAME}>`, //default <onboarding@resend.dev>
+      to: [email],
       subject,
       react: createElement(OTPEmail, { otpCode: code, title: subject }),
     });
