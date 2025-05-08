@@ -22,7 +22,6 @@ export function setupSwagger(app: INestApplication): void {
     {
       name: 'authorization',
       type: 'apiKey',
-      in: 'headers',
     },
     'payment-api-key',
   );
