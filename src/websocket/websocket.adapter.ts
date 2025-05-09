@@ -21,9 +21,31 @@ export class WebSocketAdapter extends IoAdapter {
     const pubClient = createClient({ url: envConfig.REDIS_URL });
     const subClient = pubClient.duplicate();
 
-    await Promise.all([pubClient.connect(), subClient.connect()]);
+    pubClient.on('error', (err) => {
+      console.error('Redis Pub Client Error:', err);
+    });
 
-    this.adapterConstructor = createAdapter(pubClient, subClient);
+    subClient.on('error', (err) => {
+      console.error('Redis Sub Client Error:', err);
+    });
+
+    pubClient.on('ready', () => {
+      console.log('Redis Pub Client is ready');
+    });
+
+    subClient.on('ready', () => {
+      console.log('Redis Sub Client is ready');
+    });
+
+    try {
+      await Promise.all([pubClient.connect(), subClient.connect()]);
+      console.log('✅ Redis connected successfully');
+
+      this.adapterConstructor = createAdapter(pubClient, subClient);
+    } catch (err) {
+      console.error('❌ Redis connection failed:', err);
+      throw err;
+    }
   }
 
   createIOServer(port: number, options?: ServerOptions) {
