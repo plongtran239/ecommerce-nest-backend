@@ -1,6 +1,7 @@
 import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
-import { APP_FILTER, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { AcceptLanguageResolver, I18nModule, QueryResolver } from 'nestjs-i18n';
 import { ZodSerializerInterceptor } from 'nestjs-zod';
 import path from 'path';
@@ -24,12 +25,27 @@ import { RoleModule } from 'src/routes/role/role.module';
 import { UserModule } from 'src/routes/user/user.module';
 import envConfig from 'src/shared/config';
 import { HttpExceptionFilter } from 'src/shared/filters/http-exception.filter';
+import { ThrottlerBehindProxyGuard } from 'src/shared/guards/throttler-behind-proxy.guard';
 import CustomZodValidationPipe from 'src/shared/pipes/zod-validation.pipe';
 import { SharedModule } from 'src/shared/shared.module';
 import { WebSocketModule } from 'src/websocket/websocket.module';
 
 @Module({
   imports: [
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          name: 'short',
+          ttl: 60000, // 1 minute
+          limit: 10,
+        },
+        {
+          name: 'long',
+          ttl: 60000 * 10, // 10 minutes
+          limit: 100,
+        },
+      ],
+    }),
     BullModule.forRoot({
       connection: {
         url: envConfig.REDIS_URL,
@@ -75,6 +91,10 @@ import { WebSocketModule } from 'src/websocket/websocket.module';
     {
       provide: APP_FILTER,
       useClass: HttpExceptionFilter,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerBehindProxyGuard,
     },
     PaymentConsumer,
   ],
