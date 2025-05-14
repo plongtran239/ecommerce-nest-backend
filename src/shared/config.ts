@@ -16,7 +16,13 @@ const configSchema = z.object({
   PORT: z.string().optional(),
   APP_NAME: z.string().nonempty(),
   DOMAIN_NAME: z.string().nonempty(),
+
   PREFIX_STATIC_ENDPOINT: z.string().nonempty(),
+  S3_REGION: z.string().nonempty(),
+  S3_ENDPOINT: z.string().nonempty(),
+  S3_BUCKET_NAME: z.string().nonempty(),
+  S3_ACCESS_KEY: z.string().nonempty(),
+  S3_SECRET_KEY: z.string().nonempty(),
 
   DATABASE_URL: z.string().nonempty(),
 
