@@ -4,6 +4,7 @@ import { existsSync, mkdirSync } from 'fs';
 import multer from 'multer';
 
 import { MediaController } from 'src/routes/media/media.controller';
+import { MediaService } from 'src/routes/media/media.server';
 import { UPLOAD_DIR } from 'src/shared/constants/other.constant';
 import { generateRandomFileName } from 'src/shared/helpers';
 
@@ -18,6 +19,7 @@ const storage = multer.diskStorage({
 });
 
 @Module({
+  providers: [MediaService],
   controllers: [MediaController],
   imports: [
     MulterModule.register({

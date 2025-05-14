@@ -1,11 +1,9 @@
 import {
   Controller,
-  FileTypeValidator,
   Get,
   MaxFileSizeValidator,
   NotFoundException,
   Param,
-  ParseFilePipe,
   Post,
   Res,
   UploadedFiles,
@@ -16,12 +14,16 @@ import { ApiBearerAuth } from '@nestjs/swagger';
 import { Response } from 'express';
 import path from 'path';
 
-import envConfig from 'src/shared/config';
+import { ImageFileTypeValidator } from 'src/routes/media/image-file-type.validator';
+import { MediaService } from 'src/routes/media/media.server';
+import { ParseFilePipeWithUnlink } from 'src/routes/media/parse-file-unlink.pipe';
 import { UPLOAD_DIR } from 'src/shared/constants/other.constant';
 import { IsPublic } from 'src/shared/decorators/auth.decorator';
 
 @Controller('media')
 export class MediaController {
+  constructor(private readonly mediaService: MediaService) {}
+
   @Post('images/upload')
   @ApiBearerAuth()
   @UseInterceptors(
@@ -33,24 +35,16 @@ export class MediaController {
   )
   uploadFile(
     @UploadedFiles(
-      new ParseFilePipe({
+      new ParseFilePipeWithUnlink({
         validators: [
           new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 5 }), // 5MB
-          new FileTypeValidator({ fileType: /(jpg|jpeg|png|webp)$/ }),
+          new ImageFileTypeValidator(),
         ],
       }),
     )
     files: Array<Express.Multer.File>,
   ) {
-    return {
-      files: files.map((file) => ({
-        filename: file.filename,
-        originalname: file.originalname,
-        mimetype: file.mimetype,
-        size: file.size,
-        url: `${envConfig.PREFIX_STATIC_ENDPOINT}/${file.filename}`,
-      })),
-    };
+    return this.mediaService.uploadFile(files);
   }
 
   @Get('static/:filename')

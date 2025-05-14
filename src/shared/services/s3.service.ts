@@ -1,5 +1,7 @@
 import { S3 } from '@aws-sdk/client-s3';
+import { Upload } from '@aws-sdk/lib-storage';
 import { Injectable, OnModuleInit } from '@nestjs/common';
+import { readFileSync } from 'fs';
 
 import envConfig from 'src/shared/config';
 
@@ -26,15 +28,38 @@ export class S3Service implements OnModuleInit {
 
   async checkConnection(): Promise<boolean> {
     try {
-      const res = await this.s3.listBuckets({});
-      console.log(res);
-
       await this.s3.headBucket({ Bucket: this.bucketName });
       console.log('✅ Connected to DigitalOcean Spaces!');
       return true;
     } catch (error) {
       console.error('❌ Failed to connect to Spaces:', error.message);
       return false;
+    }
+  }
+
+  async uploadFile({ filename, filepath, contentType }: { filename: string; filepath: string; contentType: string }) {
+    try {
+      const parallelUploads3 = new Upload({
+        client: this.s3,
+        params: {
+          Bucket: this.bucketName,
+          Key: filename,
+          Body: readFileSync(filepath),
+          ContentType: contentType,
+        },
+        tags: [],
+        queueSize: 4,
+        partSize: 1024 * 1024 * 5,
+        leavePartsOnError: false,
+      });
+
+      parallelUploads3.on('httpUploadProgress', (progress) => {
+        console.log(progress);
+      });
+
+      return parallelUploads3.done();
+    } catch (e) {
+      console.log(e);
     }
   }
 }
