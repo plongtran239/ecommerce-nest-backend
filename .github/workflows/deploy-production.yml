@@ -1,4 +1,8 @@
 name: Deploy Production
+permissions:
+  contents: read
+  packages: read
+  pull-requests: write
 
 on:
   push:
