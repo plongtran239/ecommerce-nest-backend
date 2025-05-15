@@ -1,7 +1,9 @@
-import { S3 } from '@aws-sdk/client-s3';
+import { PutObjectCommand, S3 } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { readFileSync } from 'fs';
+import mime from 'mime-types';
 
 import envConfig from 'src/shared/config';
 
@@ -26,7 +28,7 @@ export class S3Service implements OnModuleInit {
     await this.checkConnection();
   }
 
-  async checkConnection(): Promise<boolean> {
+  private async checkConnection(): Promise<boolean> {
     try {
       await this.s3.headBucket({ Bucket: this.bucketName });
       console.log('✅ Connected to DigitalOcean Spaces!');
@@ -61,5 +63,15 @@ export class S3Service implements OnModuleInit {
     } catch (e) {
       console.log(e);
     }
+  }
+
+  async createPresignedUrlWithClient(filename: string) {
+    const contentType = mime.lookup(filename) || 'application/octet-stream';
+    const command = new PutObjectCommand({
+      Bucket: this.bucketName,
+      Key: filename,
+      ContentType: contentType,
+    });
+    return getSignedUrl(this.s3, command, { expiresIn: 10 });
   }
 }

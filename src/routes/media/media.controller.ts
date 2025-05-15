@@ -1,24 +1,12 @@
-import {
-  Controller,
-  Get,
-  MaxFileSizeValidator,
-  NotFoundException,
-  Param,
-  Post,
-  Res,
-  UploadedFiles,
-  UseInterceptors,
-} from '@nestjs/common';
+import { Body, Controller, MaxFileSizeValidator, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth } from '@nestjs/swagger';
-import { Response } from 'express';
-import path from 'path';
+import { ZodSerializerDto } from 'nestjs-zod';
 
 import { ImageFileTypeValidator } from 'src/routes/media/image-file-type.validator';
-import { MediaService } from 'src/routes/media/media.server';
+import { PresignedUploadFileBodyDTO, PresignedUploadFileResDTO, UploadFilesResDTO } from 'src/routes/media/media.dto';
+import { MediaService } from 'src/routes/media/media.service';
 import { ParseFilePipeWithUnlink } from 'src/routes/media/parse-file-unlink.pipe';
-import { UPLOAD_DIR } from 'src/shared/constants/other.constant';
-import { IsPublic } from 'src/shared/decorators/auth.decorator';
 
 @Controller('media')
 export class MediaController {
@@ -26,6 +14,7 @@ export class MediaController {
 
   @Post('images/upload')
   @ApiBearerAuth()
+  @ZodSerializerDto(UploadFilesResDTO)
   @UseInterceptors(
     FilesInterceptor('files', 100, {
       limits: {
@@ -47,14 +36,10 @@ export class MediaController {
     return this.mediaService.uploadFile(files);
   }
 
-  @Get('static/:filename')
-  @IsPublic()
-  serveFile(@Param('filename') filename: string, @Res() res: Response) {
-    return res.sendFile(path.resolve(UPLOAD_DIR, filename), (err) => {
-      if (err) {
-        const notFound = new NotFoundException('File not found');
-        res.status(notFound.getStatus()).json(notFound.getResponse());
-      }
-    });
+  @Post('images/upload/presigned-url')
+  @ApiBearerAuth()
+  @ZodSerializerDto(PresignedUploadFileResDTO)
+  createPresignedUrl(@Body() body: PresignedUploadFileBodyDTO) {
+    return this.mediaService.createPresignedUrl(body);
   }
 }
