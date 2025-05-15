@@ -7,6 +7,8 @@ import mime from 'mime-types';
 
 import envConfig from 'src/shared/config';
 
+const PRESIGNED_URL_EXPIRES_IN = 10;
+
 @Injectable()
 export class S3Service implements OnModuleInit {
   private readonly s3: S3;
@@ -72,6 +74,6 @@ export class S3Service implements OnModuleInit {
       Key: filename,
       ContentType: contentType,
     });
-    return getSignedUrl(this.s3, command, { expiresIn: 10 });
+    return getSignedUrl(this.s3, command, { expiresIn: PRESIGNED_URL_EXPIRES_IN });
   }
 }
