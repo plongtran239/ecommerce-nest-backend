@@ -1,6 +1,6 @@
 # EcomNest
 
-[EcomNest](https://api.ecom.tranphuoclong.io.vn/documentation) is a REST API built with [Nest.js](https://nestjs.com/). It is a e-commerce API that allows you to manage products, orders, and users. It is designed to be easy to use and extendable.
+[EcomNest](https://api.ecom.tranphuoclong.io.vn/documentation) is a REST API built with [Nest.js](https://nestjs.com/).
 
 ## 🚀 Tech Stack
 
