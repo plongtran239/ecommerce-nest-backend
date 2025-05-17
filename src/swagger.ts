@@ -18,15 +18,20 @@ export function setupSwagger(app: INestApplication): void {
 
   patchNestJsSwagger();
 
-  const documentBuilder = new DocumentBuilder().setTitle('E-commerce API').setDescription('').addBearerAuth().addApiKey(
-    {
-      name: 'authorization',
-      type: 'apiKey',
-    },
-    'payment-api-key',
-  );
+  const config = new DocumentBuilder()
+    .setTitle('E-commerce API')
+    .setDescription('')
+    .addBearerAuth()
+    .addApiKey(
+      {
+        name: 'authorization',
+        type: 'apiKey',
+      },
+      'payment-api-key',
+    )
+    .build();
 
-  const document = SwaggerModule.createDocument(app, documentBuilder.build());
+  const document = SwaggerModule.createDocument(app, config);
 
   SwaggerModule.setup('documentation', app, document, {
     swaggerOptions: {

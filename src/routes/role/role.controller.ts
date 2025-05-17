@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiParam } from '@nestjs/swagger';
 import { ZodSerializerDto } from 'nestjs-zod';
 
 import {
@@ -39,6 +39,11 @@ export class RoleController {
 
   @Get(':roleId')
   @ApiBearerAuth()
+  @ApiParam({
+    name: 'roleId',
+    type: Number,
+    description: 'The ID of the role',
+  })
   @ZodSerializerDto(GetDetailRoleResDTO)
   getById(@Param() params: GetRoleParamsDTO) {
     return this.roleService.getById(params.roleId);
@@ -46,6 +51,11 @@ export class RoleController {
 
   @Put(':roleId')
   @ApiBearerAuth()
+  @ApiParam({
+    name: 'roleId',
+    type: Number,
+    description: 'The ID of the role',
+  })
   @ZodSerializerDto(UpdateRoleResDTO)
   update(@Param() params: GetRoleParamsDTO, @Body() body: UpdateRoleBodyDTO, @User('userId') userId: number) {
     return this.roleService.update({
@@ -57,6 +67,11 @@ export class RoleController {
 
   @Delete(':roleId')
   @ApiBearerAuth()
+  @ApiParam({
+    name: 'roleId',
+    type: Number,
+    description: 'The ID of the role',
+  })
   @ZodSerializerDto(MessageResDTO)
   delete(@Param() params: GetRoleParamsDTO, @User('userId') userId: number) {
     return this.roleService.delete({

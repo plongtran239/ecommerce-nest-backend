@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiParam } from '@nestjs/swagger';
 import { ZodSerializerDto } from 'nestjs-zod';
 
 import {
@@ -28,6 +28,11 @@ export class CategoryController {
 
   @Get(':categoryId')
   @IsPublic()
+  @ApiParam({
+    name: 'categoryId',
+    type: Number,
+    description: 'The ID of the category',
+  })
   @ZodSerializerDto(GetCategoryDetailResDTO)
   findById(@Param() params: GetCategoryParamsDTO) {
     return this.categoryService.findById(params.categoryId);
@@ -45,6 +50,11 @@ export class CategoryController {
 
   @Put(':categoryId')
   @ApiBearerAuth()
+  @ApiParam({
+    name: 'categoryId',
+    type: Number,
+    description: 'The ID of the category',
+  })
   @ZodSerializerDto(GetCategoryDetailResDTO)
   update(@Body() body: UpdateCategoryBodyDTO, @Param() params: GetCategoryParamsDTO, @User('userId') userId: number) {
     return this.categoryService.update({
@@ -56,6 +66,11 @@ export class CategoryController {
 
   @Delete(':categoryId')
   @ApiBearerAuth()
+  @ApiParam({
+    name: 'categoryId',
+    type: Number,
+    description: 'The ID of the category',
+  })
   @ZodSerializerDto(MessageResDTO)
   delete(@Param() params: GetCategoryParamsDTO, @User('userId') userId: number) {
     return this.categoryService.delete({
