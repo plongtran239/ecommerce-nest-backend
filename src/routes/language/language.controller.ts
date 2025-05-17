@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiParam } from '@nestjs/swagger';
 import { ZodSerializerDto } from 'nestjs-zod';
 
 import {
@@ -38,6 +38,11 @@ export class LanguageController {
 
   @Get(':languageId')
   @ApiBearerAuth()
+  @ApiParam({
+    name: 'languageId',
+    type: Number,
+    description: 'The ID of the language',
+  })
   @ZodSerializerDto(GetDetailLanguageResDTO)
   getById(@Param() params: GetLanguageParamsDTO) {
     return this.languageService.getById(params.languageId);
@@ -45,6 +50,11 @@ export class LanguageController {
 
   @Put(':languageId')
   @ApiBearerAuth()
+  @ApiParam({
+    name: 'languageId',
+    type: Number,
+    description: 'The ID of the language',
+  })
   @ZodSerializerDto(UpdateLanguageResDTO)
   update(@Param() params: GetLanguageParamsDTO, @Body() body: UpdateLanguageBodyDTO, @User('userId') userId: number) {
     return this.languageService.update({
@@ -56,6 +66,11 @@ export class LanguageController {
 
   @Delete(':languageId')
   @ApiBearerAuth()
+  @ApiParam({
+    name: 'languageId',
+    type: Number,
+    description: 'The ID of the language',
+  })
   @ZodSerializerDto(MessageResDTO)
   delete(@Param() params: GetLanguageParamsDTO, @User('userId') userId: number) {
     return this.languageService.delete({

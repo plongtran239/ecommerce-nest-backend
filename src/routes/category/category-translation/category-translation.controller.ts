@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiParam } from '@nestjs/swagger';
 import { ZodSerializerDto } from 'nestjs-zod';
 
 import {
@@ -18,6 +18,11 @@ export class CategoryTranslationController {
 
   @Get(':categoryTranslationId')
   @ApiBearerAuth()
+  @ApiParam({
+    name: 'categoryTranslationId',
+    type: Number,
+    description: 'The ID of the category translation',
+  })
   @ZodSerializerDto(GetCategoryTranslationDetailResDTO)
   findById(@Param() params: GetCategoryTranslationParamsDTO) {
     return this.categoryTranslationService.findById(params.categoryTranslationId);
@@ -35,6 +40,11 @@ export class CategoryTranslationController {
 
   @Put(':categoryTranslationId')
   @ApiBearerAuth()
+  @ApiParam({
+    name: 'categoryTranslationId',
+    type: Number,
+    description: 'The ID of the category translation',
+  })
   @ZodSerializerDto(GetCategoryTranslationDetailResDTO)
   update(
     @Body() body: UpdateCategoryTranslationBodyDTO,
@@ -50,6 +60,11 @@ export class CategoryTranslationController {
 
   @Delete(':categoryTranslationId')
   @ApiBearerAuth()
+  @ApiParam({
+    name: 'categoryTranslationId',
+    type: Number,
+    description: 'The ID of the category translation',
+  })
   @ZodSerializerDto(MessageResDTO)
   delete(@Param() params: GetCategoryTranslationParamsDTO, @User('userId') userId: number) {
     return this.categoryTranslationService.delete({

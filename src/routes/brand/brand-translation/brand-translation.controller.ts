@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiParam } from '@nestjs/swagger';
 import { ZodSerializerDto } from 'nestjs-zod';
 
 import {
@@ -18,6 +18,11 @@ export class BrandTranslationController {
 
   @Get(':brandTranslationId')
   @ApiBearerAuth()
+  @ApiParam({
+    name: 'brandTranslationId',
+    type: Number,
+    description: 'The ID of the brand translation',
+  })
   @ZodSerializerDto(GetBrandTranslationDetailResDTO)
   findById(@Param() params: GetBrandTranslationParamsDTO) {
     return this.brandTranslationService.findById(params.brandTranslationId);
@@ -35,6 +40,11 @@ export class BrandTranslationController {
 
   @Put(':brandTranslationId')
   @ApiBearerAuth()
+  @ApiParam({
+    name: 'brandTranslationId',
+    type: Number,
+    description: 'The ID of the brand translation',
+  })
   @ZodSerializerDto(GetBrandTranslationDetailResDTO)
   update(
     @Body() body: UpdateBrandTranslationBodyDTO,
@@ -50,6 +60,11 @@ export class BrandTranslationController {
 
   @Delete(':brandTranslationId')
   @ApiBearerAuth()
+  @ApiParam({
+    name: 'brandTranslationId',
+    type: Number,
+    description: 'The ID of the brand translation',
+  })
   @ZodSerializerDto(MessageResDTO)
   delete(@Param() params: GetBrandTranslationParamsDTO, @User('userId') userId: number) {
     return this.brandTranslationService.delete({

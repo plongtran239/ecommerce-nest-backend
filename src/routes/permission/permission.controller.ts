@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiParam } from '@nestjs/swagger';
 import { ZodSerializerDto } from 'nestjs-zod';
 
 import {
@@ -38,6 +38,11 @@ export class PermissionController {
 
   @Get(':permissionId')
   @ApiBearerAuth()
+  @ApiParam({
+    name: 'permissionId',
+    type: Number,
+    description: 'The ID of the permission',
+  })
   @ZodSerializerDto(GetDetailPermissionResDTO)
   getById(@Param() params: GetPermisstionParamsDTO) {
     return this.permissionService.getById(params.permissionId);
@@ -45,6 +50,11 @@ export class PermissionController {
 
   @Put(':permissionId')
   @ApiBearerAuth()
+  @ApiParam({
+    name: 'permissionId',
+    type: Number,
+    description: 'The ID of the permission',
+  })
   @ZodSerializerDto(UpdatePermissionResDTO)
   update(
     @Param() params: GetPermisstionParamsDTO,
@@ -60,6 +70,11 @@ export class PermissionController {
 
   @Delete(':permissionId')
   @ApiBearerAuth()
+  @ApiParam({
+    name: 'permissionId',
+    type: Number,
+    description: 'The ID of the permission',
+  })
   delete(@Param() params: GetPermisstionParamsDTO, @User('userId') userId: number) {
     return this.permissionService.delete({
       id: params.permissionId,

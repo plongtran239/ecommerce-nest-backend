@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiParam } from '@nestjs/swagger';
 import { ZodSerializerDto } from 'nestjs-zod';
 
 import {
@@ -28,6 +28,11 @@ export class OrderController {
 
   @Get(':orderId')
   @ApiBearerAuth()
+  @ApiParam({
+    name: 'orderId',
+    type: Number,
+    description: 'The ID of the order',
+  })
   @ZodSerializerDto(GetOrderDetailResDTO)
   async getDetail(@Param() params: GetOrderParamsDTO, @User('userId') userId: number) {
     return this.orderService.getDetail({ orderId: params.orderId, userId });
@@ -42,6 +47,11 @@ export class OrderController {
 
   @Put(':orderId')
   @ApiBearerAuth()
+  @ApiParam({
+    name: 'orderId',
+    type: Number,
+    description: 'The ID of the order',
+  })
   @ZodSerializerDto(CancelOrderResDTO)
   async cancel(@Param() params: GetOrderParamsDTO, @User('userId') userId: number, @Body() _: EmptyBodyDTO) {
     return this.orderService.cancel({ orderId: params.orderId, userId });
