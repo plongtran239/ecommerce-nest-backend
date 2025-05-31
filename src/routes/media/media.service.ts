@@ -35,8 +35,12 @@ export class MediaService {
   }
 
   async createPresignedUrl({ filename }: PresignedUploadFileBodyType) {
+    const normalizedFolder = filename.split('/')[0];
+
     const randomFilename = generateRandomFileName(filename);
-    const presignedUrl = await this.s3Service.createPresignedUrlWithClient(randomFilename);
+
+    const presignedUrl = await this.s3Service.createPresignedUrlWithClient(normalizedFolder + '/' + randomFilename);
+
     const url = presignedUrl.split('?')[0];
 
     return {

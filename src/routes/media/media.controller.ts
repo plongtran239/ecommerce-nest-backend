@@ -22,7 +22,7 @@ export class MediaController {
       },
     }),
   )
-  uploadFile(
+  async uploadFiles(
     @UploadedFiles(
       new ParseFilePipeWithUnlink({
         validators: [
@@ -33,13 +33,13 @@ export class MediaController {
     )
     files: Array<Express.Multer.File>,
   ) {
-    return this.mediaService.uploadFile(files);
+    return await this.mediaService.uploadFile(files);
   }
 
   @Post('images/upload/presigned-url')
   @ApiBearerAuth()
   @ZodSerializerDto(PresignedUploadFileResDTO)
-  createPresignedUrl(@Body() body: PresignedUploadFileBodyDTO) {
-    return this.mediaService.createPresignedUrl(body);
+  async createPresignedUrl(@Body() body: PresignedUploadFileBodyDTO) {
+    return await this.mediaService.createPresignedUrl(body);
   }
 }

@@ -69,11 +69,13 @@ export class S3Service implements OnModuleInit {
 
   async createPresignedUrlWithClient(filename: string) {
     const contentType = mime.lookup(filename) || 'application/octet-stream';
+
     const command = new PutObjectCommand({
       Bucket: this.bucketName,
       Key: filename,
       ContentType: contentType,
     });
+
     return getSignedUrl(this.s3, command, { expiresIn: PRESIGNED_URL_EXPIRES_IN });
   }
 }
