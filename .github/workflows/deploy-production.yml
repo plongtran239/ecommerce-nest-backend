@@ -1,4 +1,5 @@
 name: Deploy Production
+
 permissions:
   contents: read
   packages: read
@@ -22,20 +23,6 @@ jobs:
         run: docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_PASSWORD }}
       - name: Push docker image
         run: docker push plongtran239/ecom-backend:v0
-      - name: send telegram message after build
-        if: success()
-        uses: appleboy/telegram-action@master
-        with:
-          to: ${{ secrets.TELEGRAM_CHAT_ID }}
-          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          message: |
-            Build and push docker image successfully!
-            ${{ github.actor }} created commit:
-            Commit message: ${{ github.event.commits[0].message }}
-
-            Repository: ${{ github.repository }}
-
-            See changes: https://github.com/${{ github.repository }}/commit/${{github.sha}}
   deploy:
     name: Deploy to Production
     runs-on: ubuntu-latest
@@ -56,18 +43,3 @@ jobs:
             docker compose up -d
             docker exec -it ecom-backend npx prisma migrate deploy
             docker image prune -f
-
-      - name: send telegram message after build
-        if: success()
-        uses: appleboy/telegram-action@master
-        with:
-          to: ${{ secrets.TELEGRAM_CHAT_ID }}
-          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          message: |
-            Deploy to production successfully!
-            ${{ github.actor }} created commit:
-            Commit message: ${{ github.event.commits[0].message }}
-
-            Repository: ${{ github.repository }}
-
-            See changes: https://github.com/${{ github.repository }}/commit/${{github.sha}}
