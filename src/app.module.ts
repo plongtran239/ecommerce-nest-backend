@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 import { AcceptLanguageResolver, I18nModule, QueryResolver } from 'nestjs-i18n';
 import { ZodSerializerInterceptor } from 'nestjs-zod';
 import path from 'path';
@@ -64,6 +65,7 @@ import { WebSocketModule } from 'src/websocket/websocket.module';
       typesOutputPath: path.resolve('src/generated/i18n.generated.ts'),
     }),
     ScheduleModule.forRoot(),
+    PrometheusModule.register(),
     SharedModule,
     AuthModule,
     LanguageModule,
