@@ -17,6 +17,10 @@ export class AccessTokenGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request: Request = context.switchToHttp().getRequest();
 
+    if (request.path === '/metrics') {
+      return true;
+    }
+
     const decodedAccessToken = await this.extractAndValidateAccessToken(request);
 
     await this.validateUserPermission(decodedAccessToken, request);
