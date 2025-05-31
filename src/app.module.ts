@@ -21,6 +21,7 @@ import { PermissionModule } from 'src/routes/permission/permission.module';
 import { ProductTranslationModule } from 'src/routes/product/product-translation/product-translation.module';
 import { ProductModule } from 'src/routes/product/product.module';
 import { ProfileModule } from 'src/routes/profile/profile.module';
+import { ReviewModule } from 'src/routes/review/review.module';
 import { RoleModule } from 'src/routes/role/role.module';
 import { UserModule } from 'src/routes/user/user.module';
 import envConfig from 'src/shared/config';
@@ -78,6 +79,7 @@ import { WebSocketModule } from 'src/websocket/websocket.module';
     OrderModule,
     PaymentModule,
     WebSocketModule,
+    ReviewModule,
   ],
   providers: [
     {
