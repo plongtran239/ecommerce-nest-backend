@@ -1,11 +1,13 @@
 import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
+import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { AcceptLanguageResolver, I18nModule, QueryResolver } from 'nestjs-i18n';
 import { ZodSerializerInterceptor } from 'nestjs-zod';
 import path from 'path';
 
+import { RemoveRefreshTokenCronjob } from 'src/cronjobs/remove-refresh-token.cronjob';
 import { PaymentConsumer } from 'src/queues/payment.consumer';
 import { AuthModule } from 'src/routes/auth/auth.module';
 import { BrandTranslationModule } from 'src/routes/brand/brand-translation/brand-translation.module';
@@ -61,6 +63,7 @@ import { WebSocketModule } from 'src/websocket/websocket.module';
       resolvers: [{ use: QueryResolver, options: ['lang'] }, AcceptLanguageResolver],
       typesOutputPath: path.resolve('src/generated/i18n.generated.ts'),
     }),
+    ScheduleModule.forRoot(),
     SharedModule,
     AuthModule,
     LanguageModule,
@@ -99,6 +102,7 @@ import { WebSocketModule } from 'src/websocket/websocket.module';
       useClass: ThrottlerBehindProxyGuard,
     },
     PaymentConsumer,
+    RemoveRefreshTokenCronjob,
   ],
 })
 export class AppModule {}

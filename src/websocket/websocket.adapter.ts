@@ -1,4 +1,4 @@
-import { INestApplicationContext } from '@nestjs/common';
+import { INestApplicationContext, Logger } from '@nestjs/common';
 import { IoAdapter } from '@nestjs/platform-socket.io';
 import { createAdapter } from '@socket.io/redis-adapter';
 
@@ -9,6 +9,7 @@ import { generateUserIdRoom } from 'src/shared/helpers';
 import { TokenService } from 'src/shared/services/token.service';
 
 export class WebSocketAdapter extends IoAdapter {
+  private readonly logger = new Logger(WebSocketAdapter.name);
   private readonly tokenServive: TokenService;
   private adapterConstructor: ReturnType<typeof createAdapter>;
 
@@ -22,28 +23,28 @@ export class WebSocketAdapter extends IoAdapter {
     const subClient = pubClient.duplicate();
 
     pubClient.on('error', (err) => {
-      console.error('Redis Pub Client Error:', err);
+      this.logger.error('Redis Pub Client Error:', err);
     });
 
     subClient.on('error', (err) => {
-      console.error('Redis Sub Client Error:', err);
+      this.logger.error('Redis Sub Client Error:', err);
     });
 
     pubClient.on('ready', () => {
-      console.log('Redis Pub Client is ready');
+      this.logger.log('Redis Pub Client is ready');
     });
 
     subClient.on('ready', () => {
-      console.log('Redis Sub Client is ready');
+      this.logger.log('Redis Sub Client is ready');
     });
 
     try {
       await Promise.all([pubClient.connect(), subClient.connect()]);
-      console.log('✅ Redis connected successfully');
+      this.logger.log('✅ Redis connected successfully');
 
       this.adapterConstructor = createAdapter(pubClient, subClient);
     } catch (err) {
-      console.error('❌ Redis connection failed:', err);
+      this.logger.error('❌ Redis connection failed:', err);
       throw err;
     }
   }
@@ -79,7 +80,7 @@ export class WebSocketAdapter extends IoAdapter {
       return next(new Error('Missing access token'));
     }
 
-    console.log(`Client with id ${socket.id} connected to namespace ${socket.nsp.name}`);
+    this.logger.log(`Client with id ${socket.id} connected to namespace ${socket.nsp.name}`);
 
     try {
       const { userId } = await this.tokenServive.verifyAccessToken(accessToken);
