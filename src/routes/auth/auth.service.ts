@@ -47,9 +47,9 @@ export class AuthService {
     private readonly sharedUserRepository: SharedUserRepository,
   ) {}
 
-  async register({ email, password, name, phoneNumber, code }: RegisterBodyType) {
+  async register({ email, password, name, phoneNumber }: RegisterBodyType) {
     try {
-      await this.validateVerificationCode({ email, code, type: TypeOfVerificationCode.REGISTER });
+      await this.validateVerificationCode({ email, type: TypeOfVerificationCode.REGISTER });
 
       const clientRoleId = await this.sharedRoleRepository.getClientRoleId();
 
@@ -65,9 +65,8 @@ export class AuthService {
           avatar: null,
         }),
         this.authRepository.deleteVerificationCode({
-          email_code_type: {
+          email_type: {
             email,
-            code,
             type: TypeOfVerificationCode.REGISTER,
           },
         }),
@@ -145,7 +144,7 @@ export class AuthService {
           throw InvalidTOTPAndCodeException;
         }
       } else if (code) {
-        await this.validateVerificationCode({ email, code, type: TypeOfVerificationCode.LOGIN });
+        await this.validateVerificationCode({ email, type: TypeOfVerificationCode.LOGIN });
       }
     }
 
@@ -234,14 +233,14 @@ export class AuthService {
     }
   }
 
-  async forgotPassword({ email, code, newPassword }: ForgotPasswordBodyType) {
+  async forgotPassword({ email, newPassword }: ForgotPasswordBodyType) {
     const user = await this.sharedUserRepository.findUnique({ email });
 
     if (!user) {
       throw EmailNotFoundException;
     }
 
-    await this.validateVerificationCode({ email, code, type: TypeOfVerificationCode.FORGOT_PASSWORD });
+    await this.validateVerificationCode({ email, type: TypeOfVerificationCode.FORGOT_PASSWORD });
 
     const hashedPassword = await this.hashingService.hash(newPassword);
 
@@ -255,9 +254,8 @@ export class AuthService {
         },
       ),
       this.authRepository.deleteVerificationCode({
-        email_code_type: {
+        email_type: {
           email,
-          code,
           type: TypeOfVerificationCode.FORGOT_PASSWORD,
         },
       }),
@@ -346,7 +344,7 @@ export class AuthService {
         throw InvalidTOTPAndCodeException;
       }
     } else if (code) {
-      await this.validateVerificationCode({ email: user.email, code, type: TypeOfVerificationCode.DISABLE_2FA });
+      await this.validateVerificationCode({ email: user.email, type: TypeOfVerificationCode.DISABLE_2FA });
     }
 
     await this.sharedUserRepository.update(
@@ -364,19 +362,10 @@ export class AuthService {
     };
   }
 
-  private async validateVerificationCode({
-    code,
-    email,
-    type,
-  }: {
-    email: string;
-    code: string;
-    type: TypeOfVerificationCodeType;
-  }) {
+  private async validateVerificationCode({ email, type }: { email: string; type: TypeOfVerificationCodeType }) {
     const verificationCode = await this.authRepository.findUniqueVerificationCode({
-      email_code_type: {
+      email_type: {
         email,
-        code,
         type,
       },
     });

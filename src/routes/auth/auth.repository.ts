@@ -44,9 +44,8 @@ export class AuthRepository {
   async createVerificationCode(data: Pick<VerificationCodeType, 'email' | 'code' | 'type' | 'expiresAt'>) {
     return this.prismaService.verificationCode.upsert({
       where: {
-        email_code_type: {
+        email_type: {
           email: data.email,
-          code: data.code,
           type: data.type,
         },
       },
@@ -85,9 +84,8 @@ export class AuthRepository {
     where:
       | { id: number }
       | {
-          email_code_type: {
+          email_type: {
             email: string;
-            code: string;
             type: TypeOfVerificationCodeType;
           };
         },
@@ -135,9 +133,8 @@ export class AuthRepository {
     where:
       | { id: number }
       | {
-          email_code_type: {
+          email_type: {
             email: string;
-            code: string;
             type: TypeOfVerificationCodeType;
           };
         },
