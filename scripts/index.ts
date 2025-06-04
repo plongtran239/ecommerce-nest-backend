@@ -1,4 +1,5 @@
 import envConfig from 'src/shared/config';
+import { UserStatus } from 'src/shared/constants/auth.constant';
 import { RoleName } from 'src/shared/constants/role.constant';
 import { NotFoundRecordException } from 'src/shared/error';
 import { HashingService } from 'src/shared/services/hashing.service';
@@ -51,6 +52,7 @@ const main = async () => {
       password: hashedPassword,
       phoneNumber: envConfig.ADMIN_PHONE_NUMBER,
       roleId: adminRoleId[0].id,
+      status: UserStatus.ACTIVE,
     },
   });
 

@@ -1,15 +1,21 @@
-import { Injectable } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Inject, Injectable } from '@nestjs/common';
 
+import { Cache } from 'cache-manager';
 import { ProhibitedActionOnBaseRoleException, RoleAlreadyExistsException } from 'src/routes/role/role.error';
 import { CreateRoleBodyType, GetRolesQueryType, UpdateRoleBodyType } from 'src/routes/role/role.model';
 import { RoleRepository } from 'src/routes/role/role.repository';
 import { RoleName } from 'src/shared/constants/role.constant';
 import { NotFoundRecordException } from 'src/shared/error';
-import { isPrismaNotFoundError, isPrismaUniqueConstraintError } from 'src/shared/helpers';
+import { generateCacheKeyRole, isPrismaNotFoundError, isPrismaUniqueConstraintError } from 'src/shared/helpers';
 
 @Injectable()
 export class RoleService {
-  constructor(private readonly roleRepository: RoleRepository) {}
+  constructor(
+    private readonly roleRepository: RoleRepository,
+
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+  ) {}
 
   async create(payload: { data: CreateRoleBodyType; createdById: number }) {
     try {
@@ -40,7 +46,11 @@ export class RoleService {
     try {
       await this.verifyRole(payload.id);
 
-      return await this.roleRepository.update(payload);
+      const updatedRole = await this.roleRepository.update(payload);
+
+      await this.deleteCachedRole(updatedRole.id);
+
+      return updatedRole;
     } catch (error) {
       if (isPrismaNotFoundError(error)) {
         throw NotFoundRecordException;
@@ -56,7 +66,9 @@ export class RoleService {
     try {
       await this.verifyRole(payload.id);
 
-      await this.roleRepository.delete(payload);
+      const deletedRole = await this.roleRepository.delete(payload);
+
+      await this.deleteCachedRole(deletedRole.id);
 
       return {
         message: 'Delete role successfully',
@@ -81,5 +93,10 @@ export class RoleService {
     if (baseRoles.includes(role.name)) {
       throw ProhibitedActionOnBaseRoleException;
     }
+  }
+
+  private async deleteCachedRole(roleId: number) {
+    const cacheKey = generateCacheKeyRole(roleId);
+    await this.cacheManager.del(cacheKey);
   }
 }

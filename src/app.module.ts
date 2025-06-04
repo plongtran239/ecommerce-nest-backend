@@ -1,4 +1,6 @@
+import { createKeyv } from '@keyv/redis';
 import { BullModule } from '@nestjs/bullmq';
+import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -36,6 +38,14 @@ import { WebSocketModule } from 'src/websocket/websocket.module';
 
 @Module({
   imports: [
+    CacheModule.registerAsync({
+      isGlobal: true,
+      useFactory: () => {
+        return {
+          stores: [createKeyv(envConfig.REDIS_URL)],
+        };
+      },
+    }),
     ThrottlerModule.forRoot({
       throttlers: [
         {

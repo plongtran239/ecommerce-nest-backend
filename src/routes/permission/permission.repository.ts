@@ -73,7 +73,7 @@ export class PermissionRepository {
     id: number;
     data: UpdatePermissionBodyType;
     updatedById: number;
-  }): Promise<PermissionType> {
+  }): Promise<PermissionType & { roles: { id: number }[] }> {
     return this.prismaService.permission.update({
       where: {
         id,
@@ -83,14 +83,23 @@ export class PermissionRepository {
         ...data,
         updatedById,
       },
+      include: {
+        roles: true,
+      },
     });
   }
 
-  async delete({ id, deletedById }: { id: number; deletedById: number }, isHard?: boolean): Promise<PermissionType> {
+  async delete(
+    { id, deletedById }: { id: number; deletedById: number },
+    isHard?: boolean,
+  ): Promise<PermissionType & { roles: { id: number }[] }> {
     if (isHard) {
       return this.prismaService.permission.delete({
         where: {
           id,
+        },
+        include: {
+          roles: true,
         },
       });
     }
@@ -103,6 +112,9 @@ export class PermissionRepository {
       data: {
         deletedById,
         deletedAt: new Date(),
+      },
+      include: {
+        roles: true,
       },
     });
   }

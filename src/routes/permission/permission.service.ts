@@ -1,5 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Inject, Injectable } from '@nestjs/common';
 
+import { Cache } from 'cache-manager';
 import { PermissionAlreadyExistsException } from 'src/routes/permission/permission.error';
 import {
   CreatePermissionBodyType,
@@ -8,11 +10,14 @@ import {
 } from 'src/routes/permission/permission.model';
 import { PermissionRepository } from 'src/routes/permission/permission.repository';
 import { NotFoundRecordException } from 'src/shared/error';
-import { isPrismaNotFoundError, isPrismaUniqueConstraintError } from 'src/shared/helpers';
+import { generateCacheKeyRole, isPrismaNotFoundError, isPrismaUniqueConstraintError } from 'src/shared/helpers';
 
 @Injectable()
 export class PermissionService {
-  constructor(private readonly permissionRepository: PermissionRepository) {}
+  constructor(
+    private readonly permissionRepository: PermissionRepository,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+  ) {}
 
   async create(payload: { data: CreatePermissionBodyType; createdById: number }) {
     try {
@@ -41,7 +46,11 @@ export class PermissionService {
 
   async update(payload: { id: number; data: UpdatePermissionBodyType; updatedById: number }) {
     try {
-      return await this.permissionRepository.update(payload);
+      const permission = await this.permissionRepository.update(payload);
+
+      await this.deleteCachedRoles(permission.roles);
+
+      return permission;
     } catch (error) {
       if (isPrismaNotFoundError(error)) {
         throw NotFoundRecordException;
@@ -55,7 +64,9 @@ export class PermissionService {
 
   async delete(payload: { id: number; deletedById: number }) {
     try {
-      await this.permissionRepository.delete(payload);
+      const permission = await this.permissionRepository.delete(payload);
+
+      await this.deleteCachedRoles(permission.roles);
 
       return {
         message: 'Delete permission successfully',
@@ -66,5 +77,14 @@ export class PermissionService {
       }
       throw error;
     }
+  }
+
+  private async deleteCachedRoles(roles: { id: number }[]) {
+    await Promise.all(
+      roles.map((role) => {
+        const cacheKey = generateCacheKeyRole(role.id);
+        return this.cacheManager.del(cacheKey);
+      }),
+    );
   }
 }
