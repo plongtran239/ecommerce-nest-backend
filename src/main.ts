@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import helmet from 'helmet';
 
 import { AppModule } from 'src/app.module';
 import { setupSwagger } from 'src/swagger';
@@ -16,6 +17,8 @@ async function bootstrap() {
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
   });
+
+  app.use(helmet());
 
   const webSocketAdapter = new WebSocketAdapter(app);
   await webSocketAdapter.connectToRedis();
