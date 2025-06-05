@@ -1,22 +1,21 @@
 services:
   backend:
     build: .
+    image: ecom-backend:latest
+    command: sh -c "npx prisma migrate deploy && npm run start:prod"
     container_name: ecom-backend
     ports:
       - '4000:4000'
       - '5555:5555'
-    env_file:
-      - .env
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@ecom-db:5432/ecom_db
     depends_on:
       - db
-    volumes:
-      - .:/app
-      - /app/node_modules
     networks:
       - ecom-network
 
   db:
-    image: postgres:15
+    image: postgres:latest
     container_name: ecom-db
     restart: always
     ports:
