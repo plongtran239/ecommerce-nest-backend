@@ -1,13 +1,18 @@
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import helmet from 'helmet';
+import { Logger } from 'nestjs-pino';
 
 import { AppModule } from 'src/app.module';
 import { setupSwagger } from 'src/swagger';
 import { WebSocketAdapter } from 'src/websocket/websocket.adapter';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    bufferLogs: true,
+  });
+
+  app.useLogger(app.get(Logger));
 
   app.set('trust proxy', 'loopback');
 
@@ -29,4 +34,4 @@ async function bootstrap() {
   await app.listen(process.env.PORT ?? 4000);
 }
 
-bootstrap();
+void bootstrap();

@@ -6,9 +6,12 @@ import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { PrometheusModule } from '@willsoto/nestjs-prometheus';
+import { Request, Response } from 'express';
 import { AcceptLanguageResolver, I18nModule, QueryResolver } from 'nestjs-i18n';
+import { LoggerModule } from 'nestjs-pino';
 import { ZodSerializerInterceptor } from 'nestjs-zod';
 import path from 'path';
+import pino from 'pino';
 
 import { RemoveRefreshTokenCronjob } from 'src/cronjobs/remove-refresh-token.cronjob';
 import { PaymentConsumer } from 'src/queues/payment.consumer';
@@ -38,6 +41,30 @@ import { WebSocketModule } from 'src/websocket/websocket.module';
 
 @Module({
   imports: [
+    LoggerModule.forRoot({
+      pinoHttp: {
+        serializers: {
+          req(req: Request) {
+            return {
+              method: req.method,
+              url: req.url,
+              query: req.query,
+              params: req.params,
+            };
+          },
+          res(res: Response) {
+            return {
+              statusCode: res.statusCode,
+            };
+          },
+        },
+        stream: pino.destination({
+          dest: path.resolve('logs/app.log'),
+          sync: false,
+          mkdir: true,
+        }),
+      },
+    }),
     CacheModule.registerAsync({
       isGlobal: true,
       useFactory: () => {
