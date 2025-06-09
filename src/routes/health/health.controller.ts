@@ -27,7 +27,7 @@ export class HealthController {
   @HealthCheck()
   check() {
     return this.health.check([
-      () => this.http.pingCheck('API', 'http://localhost:4000/documentation-json'),
+      () => this.http.pingCheck('API', 'http://localhost:4000'),
       () => this.disk.checkStorage('disk', { thresholdPercent: 0.5, path: '/' }),
       () => this.memory.checkHeap('memory_heap', 300 * 1024 * 1024),
       () => this.memory.checkRSS('memory_rss', 300 * 1024 * 1024),

@@ -13,6 +13,7 @@ import { ZodSerializerInterceptor } from 'nestjs-zod';
 import path from 'path';
 import pino from 'pino';
 
+import { AppController } from 'src/app.controller';
 import { RemoveRefreshTokenCronjob } from 'src/cronjobs/remove-refresh-token.cronjob';
 import { PaymentConsumer } from 'src/queues/payment.consumer';
 import { AuthModule } from 'src/routes/auth/auth.module';
@@ -145,5 +146,6 @@ import { WebSocketModule } from 'src/websocket/websocket.module';
     PaymentConsumer,
     RemoveRefreshTokenCronjob,
   ],
+  controllers: [AppController],
 })
 export class AppModule {}
