@@ -4,17 +4,20 @@ import expressBasicAuth from 'express-basic-auth';
 import { patchNestJsSwagger } from 'nestjs-zod';
 
 import envConfig from 'src/shared/config';
+import { NODE_ENV } from 'src/shared/constants/other.constant';
 
 export function setupSwagger(app: INestApplication): void {
-  app.use(
-    ['/documentation', '/documentation-json'], // Paths to protect
-    expressBasicAuth({
-      users: {
-        [envConfig.SWAGGER_USERNAME]: envConfig.SWAGGER_PASSWORD,
-      },
-      challenge: true,
-    }),
-  );
+  if (envConfig.NODE_ENV === NODE_ENV.PRODUCTION) {
+    app.use(
+      ['/documentation', '/documentation-json'], // Paths to protect
+      expressBasicAuth({
+        users: {
+          [envConfig.SWAGGER_USERNAME]: envConfig.SWAGGER_PASSWORD,
+        },
+        challenge: true,
+      }),
+    );
+  }
 
   patchNestJsSwagger();
 

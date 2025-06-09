@@ -4,15 +4,21 @@ import helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
 
 import { AppModule } from 'src/app.module';
+import envConfig from 'src/shared/config';
+import { NODE_ENV } from 'src/shared/constants/other.constant';
 import { setupSwagger } from 'src/swagger';
 import { WebSocketAdapter } from 'src/websocket/websocket.adapter';
 
 async function bootstrap() {
+  const isProduction = envConfig.NODE_ENV === NODE_ENV.PRODUCTION;
+
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
-    bufferLogs: true,
+    bufferLogs: isProduction,
   });
 
-  app.useLogger(app.get(Logger));
+  if (isProduction) {
+    app.useLogger(app.get(Logger));
+  }
 
   app.set('trust proxy', 'loopback');
 

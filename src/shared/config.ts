@@ -3,6 +3,8 @@ import fs from 'fs';
 import path from 'path';
 import z from 'zod';
 
+import { NODE_ENV } from 'src/shared/constants/other.constant';
+
 config({
   path: '.env',
 });
@@ -16,6 +18,7 @@ const configSchema = z.object({
   PORT: z.string().optional(),
   APP_NAME: z.string().nonempty(),
   DOMAIN_NAME: z.string().nonempty(),
+  NODE_ENV: z.enum([NODE_ENV.DEVELOPMENT, NODE_ENV.PRODUCTION]).default('development'),
 
   S3_REGION: z.string().nonempty(),
   S3_ENDPOINT: z.string().nonempty(),

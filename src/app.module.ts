@@ -21,6 +21,7 @@ import { BrandModule } from 'src/routes/brand/brand.module';
 import { CartModule } from 'src/routes/cart/cart.module';
 import { CategoryTranslationModule } from 'src/routes/category/category-translation/category-translation.module';
 import { CategoryModule } from 'src/routes/category/category.module';
+import { HealthModule } from 'src/routes/health/health.module';
 import { LanguageModule } from 'src/routes/language/language.module';
 import { MediaModule } from 'src/routes/media/media.module';
 import { OrderModule } from 'src/routes/order/order.module';
@@ -41,6 +42,7 @@ import { WebSocketModule } from 'src/websocket/websocket.module';
 
 @Module({
   imports: [
+    HealthModule,
     LoggerModule.forRoot({
       pinoHttp: {
         serializers: {
