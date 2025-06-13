@@ -102,7 +102,7 @@ import { WebSocketModule } from 'src/websocket/websocket.module';
         watch: true,
       },
       resolvers: [{ use: QueryResolver, options: ['lang'] }, AcceptLanguageResolver],
-      typesOutputPath: path.resolve(__dirname, 'generated/i18n.generated.ts'),
+      typesOutputPath: path.resolve(process.cwd(), 'src/generated/i18n.generated.ts'),
     }),
     ScheduleModule.forRoot(),
     PrometheusModule.register(),
