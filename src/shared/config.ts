@@ -1,19 +1,15 @@
 import { config } from 'dotenv';
 import fs from 'fs';
-import path from 'path';
 import z from 'zod';
 
 import { NODE_ENV } from 'src/shared/constants/other.constant';
 
-config({
-  path: '.env',
-});
+config();
 
-if (!fs.existsSync(path.resolve('.env'))) {
+if (!fs.existsSync('.env')) {
   console.log('.env file not found');
   process.exit(1);
 }
-
 const configSchema = z.object({
   PORT: z.string().optional(),
   APP_NAME: z.string().nonempty(),
