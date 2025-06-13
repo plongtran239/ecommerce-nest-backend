@@ -18,7 +18,7 @@ jobs:
       - name: Create .env file
         run: echo "${{secrets.ENV_PRODUCTION}}" > .env
       - name: Build docker image
-        run: docker build --platform linux/amd64 -t plongtran239/ecom-backend:v0 .
+        run: docker build --platform linux/amd64 -t plongtran239/ecom-backend:v0 -f Dockerfile .
       - name: Login to Docker Hub
         run: docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_PASSWORD }}
       - name: Push docker image
@@ -37,9 +37,6 @@ jobs:
           port: ${{ secrets.PORT_PRODUCTION }}
           script: |
             cd ecomnest-deployment/
-            docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_PASSWORD }}
-            docker pull plongtran239/ecom-backend:v0
-            docker compose down
-            docker compose up -d
-            docker exec -it ecom-backend npx prisma migrate deploy
-            docker image prune -f
+            export DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
+            export DOCKERHUB_PASSWORD=${{ secrets.DOCKERHUB_PASSWORD }}
+            ./scripts/deploy.sh

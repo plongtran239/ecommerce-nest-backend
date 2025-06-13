@@ -1,14 +1,19 @@
 services:
   backend:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
     image: ecom-backend:latest
-    command: sh -c "npx prisma migrate deploy && npm run start:prod"
+    command: sh -c "npx prisma migrate deploy && npm run start:dev"
     container_name: ecom-backend
     ports:
       - '4000:4000'
       - '5555:5555'
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@ecom-db:5432/ecom_db
+    volumes:
+      - .:/app
+      - /app/node_modules
     depends_on:
       - db
     networks:
