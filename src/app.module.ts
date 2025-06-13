@@ -98,11 +98,11 @@ import { WebSocketModule } from 'src/websocket/websocket.module';
     I18nModule.forRoot({
       fallbackLanguage: 'en',
       loaderOptions: {
-        path: path.resolve('src/i18n/'),
+        path: path.resolve(__dirname, 'i18n'),
         watch: true,
       },
       resolvers: [{ use: QueryResolver, options: ['lang'] }, AcceptLanguageResolver],
-      typesOutputPath: path.resolve('src/generated/i18n.generated.ts'),
+      typesOutputPath: path.resolve(__dirname, 'generated/i18n.generated.ts'),
     }),
     ScheduleModule.forRoot(),
     PrometheusModule.register(),
