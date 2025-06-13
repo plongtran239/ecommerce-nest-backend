@@ -6,6 +6,7 @@ import { Logger } from 'nestjs-pino';
 import { AppModule } from 'src/app.module';
 import envConfig from 'src/shared/config';
 import { NODE_ENV } from 'src/shared/constants/other.constant';
+import { LoggingInterceptor } from 'src/shared/interceptors/logging.interceptor';
 import { setupSwagger } from 'src/swagger';
 import { WebSocketAdapter } from 'src/websocket/websocket.adapter';
 
@@ -15,6 +16,8 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     bufferLogs: isProduction,
   });
+
+  app.useGlobalInterceptors(new LoggingInterceptor());
 
   if (isProduction) {
     app.useLogger(app.get(Logger));
