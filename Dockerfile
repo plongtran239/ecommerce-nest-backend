@@ -1,5 +1,5 @@
 # Stage 1: Development with devDependencies
-FROM node:22.15-alpine3.20 as builder
+FROM node:22.15-alpine3.20 AS builder
 
 WORKDIR /app
 

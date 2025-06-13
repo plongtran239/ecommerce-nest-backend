@@ -36,7 +36,7 @@ jobs:
           key: ${{ secrets.KEY_PRODUCTION }}
           port: ${{ secrets.PORT_PRODUCTION }}
           script: |
-            cd ecomnest-deployment/
+            cd ecommerce-deployment/
             export DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
             export DOCKERHUB_PASSWORD=${{ secrets.DOCKERHUB_PASSWORD }}
             ./scripts/deploy.sh
