@@ -40,3 +40,7 @@ export const generateUserIdRoom = (userId: number) => {
 export const generateCacheKeyRole = (roleId: number) => {
   return `role:${roleId}`;
 };
+
+export const generateSkuIdLock = (skuId: number) => {
+  return `lock:${skuId}`;
+};

@@ -21,7 +21,8 @@ import { PaymentProducer } from 'src/routes/payment/payment.producer';
 import { ORDER_STATUS } from 'src/shared/constants/order.constant';
 import { PAYMENT_STATUS } from 'src/shared/constants/payment.constant';
 import { VersionConflictException } from 'src/shared/error';
-import { isPrismaNotFoundError } from 'src/shared/helpers';
+import { generateSkuIdLock, isPrismaNotFoundError } from 'src/shared/helpers';
+import { redlock } from 'src/shared/redis';
 import { PrismaService } from 'src/shared/services/prisma.service';
 
 @Injectable()
@@ -70,163 +71,185 @@ export class OrderRepository {
   }
 
   async create({ data, userId }: { data: CreateOrderBodyType; userId: number }): Promise<CreateOrderResType> {
-    const orders = await this.prisma.$transaction(async (tx) => {
-      const allCartItemIds = data.map((item) => item.cartItemIds).flat();
+    const allCartItemIds = data.map((item) => item.cartItemIds).flat();
 
-      const cartItems = await tx.cartItem.findMany({
-        where: {
-          id: {
-            in: allCartItemIds,
-          },
-          userId,
+    const cartItemWithSkuId = await this.prisma.cartItem.findMany({
+      where: {
+        id: {
+          in: allCartItemIds,
         },
-        include: {
-          sku: {
-            include: {
-              product: {
-                include: {
-                  productTranslations: true,
+        userId,
+      },
+      select: {
+        skuId: true,
+      },
+    });
+
+    const skuIds = cartItemWithSkuId.map((item) => item.skuId);
+
+    // Lock all SKUs to prevent concurrent updates in 3 seconds
+    const locks = await Promise.all(skuIds.map((skuId) => redlock.acquire([generateSkuIdLock(skuId)], 3000)));
+
+    try {
+      const orders = await this.prisma.$transaction(async (tx) => {
+        const cartItems = await tx.cartItem.findMany({
+          where: {
+            id: {
+              in: allCartItemIds,
+            },
+            userId,
+          },
+          include: {
+            sku: {
+              include: {
+                product: {
+                  include: {
+                    productTranslations: true,
+                  },
                 },
               },
             },
           },
-        },
-      });
-
-      if (allCartItemIds.length !== cartItems.length) {
-        throw NotFoundCartItemException;
-      }
-
-      const isOutOfStock = cartItems.some((item) => item.sku.stock < item.quantity);
-
-      if (isOutOfStock) {
-        throw OutOfStockSKUException;
-      }
-
-      const isExistNotAvailableProduct = cartItems.some(
-        (item) =>
-          item.sku.product.deletedAt !== null ||
-          item.sku.product.publishedAt === null ||
-          item.sku.product.publishedAt > new Date(),
-      );
-
-      if (isExistNotAvailableProduct) {
-        throw ProductNotFoundException;
-      }
-
-      const cartItemMap = new Map<number, (typeof cartItems)[0]>();
-
-      cartItems.forEach((item) => {
-        cartItemMap.set(item.id, item);
-      });
-
-      const isValidShop = data.every((item) => {
-        const bodyCartItemIds = item.cartItemIds;
-        return bodyCartItemIds.every((cartItemId) => {
-          const cartItem = cartItemMap.get(cartItemId)!;
-          return item.shopId === cartItem.sku.createdById;
         });
-      });
 
-      if (!isValidShop) {
-        throw SKUNotBelongToShopException;
-      }
+        if (allCartItemIds.length !== cartItems.length) {
+          throw NotFoundCartItemException;
+        }
 
-      const payment = await tx.payment.create({
-        data: {
-          status: PAYMENT_STATUS.PENDING,
-        },
-        select: {
-          id: true,
-        },
-      });
+        const isOutOfStock = cartItems.some((item) => item.sku.stock < item.quantity);
 
-      const orders: CreateOrderResType['data'] = [];
+        if (isOutOfStock) {
+          throw OutOfStockSKUException;
+        }
 
-      for (const item of data) {
-        const order = await tx.order.create({
-          data: {
-            userId,
-            status: ORDER_STATUS.PENDING_PAYMENT,
-            receiver: item.receiver,
-            createdById: userId,
-            shopId: item.shopId,
-            paymentId: payment.id,
-            items: {
-              create: item.cartItemIds.map((cartItemId) => {
-                const cartItem = cartItemMap.get(cartItemId)!;
-                return {
-                  productName: cartItem.sku.product.name,
-                  skuPrice: cartItem.sku.price,
-                  image: cartItem.sku.image,
-                  skuId: cartItem.sku.id,
-                  skuValue: cartItem.sku.value,
-                  quantity: cartItem.quantity,
-                  productId: cartItem.sku.product.id,
-                  productTranslations: cartItem.sku.product.productTranslations.map((translation) => {
-                    return {
-                      id: translation.id,
-                      name: translation.name,
-                      description: translation.description,
-                      languageId: translation.languageId,
-                    };
-                  }),
-                };
-              }),
-            },
-            products: {
-              connect: item.cartItemIds.map((cartItemId) => {
-                const cartItem = cartItemMap.get(cartItemId)!;
-                return {
-                  id: cartItem.sku.product.id,
-                };
-              }),
-            },
-          },
+        const isExistNotAvailableProduct = cartItems.some(
+          (item) =>
+            item.sku.product.deletedAt !== null ||
+            item.sku.product.publishedAt === null ||
+            item.sku.product.publishedAt > new Date(),
+        );
+
+        if (isExistNotAvailableProduct) {
+          throw ProductNotFoundException;
+        }
+
+        const cartItemMap = new Map<number, (typeof cartItems)[0]>();
+
+        cartItems.forEach((item) => {
+          cartItemMap.set(item.id, item);
         });
-        orders.push(order);
-      }
 
-      await tx.cartItem.deleteMany({
-        where: {
-          id: {
-            in: allCartItemIds,
-          },
-        },
-      });
-
-      for (const cartItem of cartItems) {
-        await tx.sKU
-          .update({
-            where: {
-              id: cartItem.sku.id,
-              updatedAt: cartItem.sku.updatedAt,
-              stock: {
-                gte: cartItem.quantity,
-              },
-            },
-            data: {
-              stock: {
-                decrement: cartItem.quantity,
-              },
-            },
-          })
-          .catch((e) => {
-            if (isPrismaNotFoundError(e)) {
-              throw VersionConflictException;
-            }
-            throw e;
+        const isValidShop = data.every((item) => {
+          const bodyCartItemIds = item.cartItemIds;
+          return bodyCartItemIds.every((cartItemId) => {
+            const cartItem = cartItemMap.get(cartItemId)!;
+            return item.shopId === cartItem.sku.createdById;
           });
-      }
+        });
 
-      await this.orderProducer.addCancelPaymentJob(payment.id);
+        if (!isValidShop) {
+          throw SKUNotBelongToShopException;
+        }
 
-      return orders;
-    });
+        const payment = await tx.payment.create({
+          data: {
+            status: PAYMENT_STATUS.PENDING,
+          },
+          select: {
+            id: true,
+          },
+        });
 
-    return {
-      data: orders,
-    };
+        const orders: CreateOrderResType['data'] = [];
+
+        for (const item of data) {
+          const order = await tx.order.create({
+            data: {
+              userId,
+              status: ORDER_STATUS.PENDING_PAYMENT,
+              receiver: item.receiver,
+              createdById: userId,
+              shopId: item.shopId,
+              paymentId: payment.id,
+              items: {
+                create: item.cartItemIds.map((cartItemId) => {
+                  const cartItem = cartItemMap.get(cartItemId)!;
+                  return {
+                    productName: cartItem.sku.product.name,
+                    skuPrice: cartItem.sku.price,
+                    image: cartItem.sku.image,
+                    skuId: cartItem.sku.id,
+                    skuValue: cartItem.sku.value,
+                    quantity: cartItem.quantity,
+                    productId: cartItem.sku.product.id,
+                    productTranslations: cartItem.sku.product.productTranslations.map((translation) => {
+                      return {
+                        id: translation.id,
+                        name: translation.name,
+                        description: translation.description,
+                        languageId: translation.languageId,
+                      };
+                    }),
+                  };
+                }),
+              },
+              products: {
+                connect: item.cartItemIds.map((cartItemId) => {
+                  const cartItem = cartItemMap.get(cartItemId)!;
+                  return {
+                    id: cartItem.sku.product.id,
+                  };
+                }),
+              },
+            },
+          });
+          orders.push(order);
+        }
+
+        await tx.cartItem.deleteMany({
+          where: {
+            id: {
+              in: allCartItemIds,
+            },
+          },
+        });
+
+        for (const cartItem of cartItems) {
+          await tx.sKU
+            .update({
+              where: {
+                id: cartItem.sku.id,
+                updatedAt: cartItem.sku.updatedAt,
+                stock: {
+                  gte: cartItem.quantity,
+                },
+              },
+              data: {
+                stock: {
+                  decrement: cartItem.quantity,
+                },
+              },
+            })
+            .catch((e) => {
+              if (isPrismaNotFoundError(e)) {
+                throw VersionConflictException;
+              }
+              throw e;
+            });
+        }
+
+        await this.orderProducer.addCancelPaymentJob(payment.id);
+
+        return orders;
+      });
+
+      return {
+        data: orders,
+      };
+    } finally {
+      // Release all locks
+      await Promise.all(locks.map((lock) => lock.release().catch(() => {})));
+    }
   }
 
   async findById({ userId, orderId }: { userId: number; orderId: number }): Promise<GetOrderDetailResType | null> {
