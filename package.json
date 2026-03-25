@@ -27,9 +27,9 @@
     "run:script": "ts-node test-script.ts"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.808.0",
+    "@aws-sdk/client-s3": "^3.1017.0",
     "@aws-sdk/lib-storage": "^3.808.0",
-    "@aws-sdk/s3-request-presigner": "^3.810.0",
+    "@aws-sdk/s3-request-presigner": "^3.1017.0",
     "@keyv/redis": "^4.4.0",
     "@nestjs/axios": "^4.0.0",
     "@nestjs/bullmq": "^11.0.2",
